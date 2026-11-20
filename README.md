@@ -1,3 +1,20 @@
+# 이음 스타터 패키지 · 전체 업무보드 v2.19.0
+
+실제 업무보드 v2.15.1의 화면 구조와 모바일 동작을 반영한 독립 과제본입니다. 간소화된 별도 보드를 만들지 않고 기존 전체 화면을 유지합니다.
+
+- [전체 화면 체험](https://jinwoo165.github.io/assignment-workboard/?demo=1) — 합성 시연 자료, 새로고침 시 초기화
+- [본인 계정으로 사용](https://jinwoo165.github.io/assignment-workboard/)
+- [교재 개념·구현 대응표](guides/COURSE-MAPPING.md)
+- [반복 검증·배포 절차](workflows/cicd-ieum.md)
+- [검증 기록](guides/VERIFICATION-2.19.md)
+
+추가한 것: 세 역할의 분석 기준과 반영 전 규칙 점검, 읽음·초안 동기화, 최신 모바일 화면, 자동 검증 작업. 실제 AI 분석은 개인 AI 창에서 수행하며 결과를 가져옵니다. 독립 AI 세 개의 자동 호출을 뜻하지 않습니다.
+
+패키지를 배포받은 직원은 자신의 환경을 설정해야 합니다. .env.example을 복사해 별도 Supabase 정보를 넣으며, Microsoft 연결은 회사 앱 등록값이 필요합니다. 개인 AI 구독만으로 인증·배포가 자동 설정되지 않습니다.
+
+---
+이하 이전 구축 기록입니다. 위 안내와 guides/의 v2.19 기록이 우선합니다.
+
 # 이음 — 실사용 업무 흐름 2.16
 
 [로그인 후 사용](https://jinwoo165.github.io/assignment-workboard/) · [실사용 설정](handoff/실사용설정.md)
