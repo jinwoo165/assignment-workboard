@@ -1,7 +1,5 @@
-name: Verify assignment workboard
-on:
-  push:
-  pull_request:
+name: Verify assignment workspace
+on: [push, pull_request]
 permissions:
   contents: read
 jobs:
@@ -11,11 +9,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
           cache: npm
-      - run: npm ci --ignore-scripts
-      - run: npm run check:isolation
+      - run: npm ci
       - run: npm test
+      - run: npm run build:database
       - run: npm run test:database
+      - run: npm run check:isolation
       - run: npm run build
       - run: npm run check:isolation

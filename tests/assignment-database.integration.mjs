@@ -87,4 +87,20 @@ await asUser(u1,'a@example.test',async()=>{
  await db.query('select public.assignment_resolve_message($1,$2,$3::jsonb,false)',[mid,'중복 요청',JSON.stringify(actions)]);
  assert.equal((await db.query('select revision from public.tasks where id=$1',[fullOtherId])).rows[0].revision,saved.revision);passed++;
 });
+await asUser(u1,'a@example.test',async()=>{
+ const first=(await db.query("select public.save_workdesk_user_state($1,'draft:test','{\"body\":\"first\"}',0) as r",[w1])).rows[0].r;
+ assert.equal(first.ok,true);passed++;
+ const changed=(await db.query("select public.save_workdesk_user_state($1,'draft:test','{\"body\":\"second\"}',1) as r",[w1])).rows[0].r;
+ assert.equal(changed.row.revision,2);passed++;
+ const stale=(await db.query("select public.save_workdesk_user_state($1,'draft:test','{\"body\":\"stale\"}',1) as r",[w1])).rows[0].r;
+ assert.equal(stale.ok,false);assert.equal(stale.row.value.body,'second');passed++;
+});
+await asUser(u2,'b@example.test',async()=>{
+ assert.equal((await db.query('select * from public.workdesk_user_state where workspace_id=$1',[w1])).rows.length,0);passed++;
+ await fail(()=>db.query("select public.save_workdesk_user_state($1,'draft:test','{}',0)",[w1]),/Workspace not available/);
+});
+await asUser(u1,'a@example.test',async()=>{
+ await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:u1,email:'a@example.test',client_id:'approved-client',assignment_environment:'assignment',assignment_scopes:['workboard:read']})]);
+ await fail(()=>db.query("select public.save_workdesk_user_state($1,'draft:forbidden','{}',0)",[w1]),/OAuth write grant required/);
+});
 console.log(JSON.stringify({passed,engine:'PGlite PostgreSQL',hostedAuthTested:false}));await db.close();
