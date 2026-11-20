@@ -46,7 +46,7 @@ export function searchWorkdesk(data,query){
  const documents=[],hidden=new Set((data.itemVisibility||[]).filter(row=>row.hidden_at).map(row=>itemVisibilityKey(row.kind,row.drive_id,row.item_id)));
  const add=(group,kind,id,title,fields,badges=[],meta='',url='')=>documents.push({group,kind,id,title:clean(title),fields:fields.filter(([,text])=>clean(text)).map(([label,text])=>({label,text:clean(text)})),badges:badges.filter(Boolean),meta,url:safeURL(url)});
  for(const task of data.tasks||[]){
-  add(task.archived?'archived':'tasks','task',task.id,task.title,[['메모',task.note],['남은 일',task.remaining_action],['다음 행동',task.next_action],['프로젝트',task.project],['담당',task.owner_label],['마감',task.due_date],['다음 확인',task.next_review_on],...(task.source_refs||[]).flatMap(ref=>[['근거',ref.excerpt],['출처',ref.label],['원문 링크',safeURL(ref.url)]])],[statuses[task.status]||task.status,task.archived?'보관됨':''],task.project||'');
+  add(task.archived?'archived':'tasks','task',task.id,task.title,[['메모',task.note],['남은 일',task.remaining_action],['다음 행동',task.next_action],['프로젝트',task.project],['담당',task.owner_label],['마감',task.due_date],['다음 확인',task.next_review_on],...(task.source_refs||[]).flatMap(ref=>[['근거',ref.excerpt||ref.context],['출처',ref.label||ref.title],['원문 링크',safeURL(ref.url)]])],[statuses[task.status]||task.status,task.archived?'보관됨':''],task.project||'');
  }
  for(const event of data.events||[]){
   const date=event.start_at?(event.all_day?day(event.start_at)+' · 종일':day(event.start_at)+' · '+kstTime(event.start_at)):'';

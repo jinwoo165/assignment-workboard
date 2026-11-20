@@ -33,8 +33,8 @@ export function linkedText(value){
 export function sourceReferencesHTML(refs=[]){
  if(!refs.length)return '<p class="task-detail-empty">등록된 원문 링크가 없습니다.</p>';
  return refs.map(ref=>{
-  const url=safeURL(ref.url),label=ref.label||'업무 원문';
-  return `<article class="task-source"><div class="task-source-heading">${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)} <span aria-hidden="true">↗</span></a>`:`<strong>${esc(label)}</strong><span class="muted"> · 직접 링크 미확인</span>`}</div>${ref.occurred_at?`<small class="muted">${esc(kstTime(ref.occurred_at))}</small>`:''}${ref.excerpt?`<p class="linked-copy">${linkedText(ref.excerpt)}</p>`:''}</article>`;
+  const url=safeURL(ref.url),label=ref.label||ref.title||'업무 원문',excerpt=ref.excerpt||ref.context;
+  return `<article class="task-source"><div class="task-source-heading">${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)} <span aria-hidden="true">↗</span></a>`:`<strong>${esc(label)}</strong><span class="muted"> · 직접 링크 미확인</span>`}</div>${ref.occurred_at?`<small class="muted">${esc(kstTime(ref.occurred_at))}</small>`:''}${excerpt?`<p class="linked-copy">${linkedText(excerpt)}</p>`:''}</article>`;
  }).join('');
 }
 

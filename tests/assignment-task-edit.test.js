@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {taskEditPatch} from '../src/assignment-task-edit.js';
+test('direct changes do not overwrite source fields or untouched notes',()=>{const task={status:'todo',note:'메모',remaining_action:'확인',next_review_on:null,archived:false};assert.deepEqual(taskEditPatch(task,{...task,status:'done'}),{status:'done'});assert.deepEqual(taskEditPatch(task,{...task,reviewed:true}),{pending_review:false});assert.throws(()=>taskEditPatch(task,{status:'unknown'}));});

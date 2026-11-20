@@ -1,3 +1,4 @@
+import {mountTaskEdit} from './assignment-task-edit.js';
 import {mountImport} from './assignment-import.js';
 import {createClient} from '@supabase/supabase-js';
 import {SUPABASE_URL,SUPABASE_KEY,LOGIN_CONFIGURED} from './config.js';
@@ -590,8 +591,9 @@ async function openItemDetail(task,event){
  if(!task&&!event)return;
  const target={task_id:task?.id||null,event_id:event?.id||null};
  conversationTarget=target;editTask=task?structuredClone(task):null;detailHistory=[];
- $('#detail').innerHTML=`<div class="task-detail fixed-item-dialog">${itemHeader('closeItemDetail')}${itemTabs('content')}<div class="dialog-body" tabindex="0" role="region" aria-label="업무 내용 스크롤"><div id="itemDetailContent" ${task?`data-task-id="${esc(task.id)}"`:`data-event-id="${esc(event.id)}"`}>${readableItemContent(task,event)}</div>${task?'<details class="previous-records"><summary>변경 이력</summary><div id="detailHistory" tabindex="0" role="region" aria-label="업무 변경 이력 스크롤"></div></details>':''}</div></div>`;
+ $('#detail').innerHTML=`<div class="task-detail fixed-item-dialog">${itemHeader('closeItemDetail')}${itemTabs('content')}<div class="dialog-body" tabindex="0" role="region" aria-label="업무 내용 스크롤"><div id="itemDetailContent" ${task?`data-task-id="${esc(task.id)}"`:`data-event-id="${esc(event.id)}"`}>${readableItemContent(task,event)}</div>${task?'<button class="btn primary" id="manageTask">진행 상태 · 메모 관리</button><details class="previous-records"><summary>변경 이력</summary><div id="detailHistory" tabindex="0" role="region" aria-label="업무 변경 이력 스크롤"></div></details>':''}</div></div>`;
  $('#closeItemDetail').onclick=()=>$('#detail').close();bindStoryButtons($('#detail'));bindItemTabs();
+ if(task)$('#manageTask').onclick=()=>mountTaskEdit($('#historyDetail'),{task:structuredClone(state.tasks.find(t=>t.id===task.id)||task),onSave:async(patch,revision)=>{if(demo){const current=state.tasks.find(t=>t.id===task.id);Object.assign(current,patch,{revision:current.revision+1});render();refreshItemDetail();return current;}const result=await db.rpc('save_task',{p_id:task.id,p_expected:revision,p_patch:patch});if(result.error)throw result.error;await refresh(true);await loadTaskDetailHistory(task.id);return result.data;}});
  if(!$('#detail').open)$('#detail').showModal();$('#detail .dialog-body').scrollTop=0;
  if(task)await loadTaskDetailHistory(task.id);
 }

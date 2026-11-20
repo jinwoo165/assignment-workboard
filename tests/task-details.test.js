@@ -42,3 +42,8 @@ test('원문 링크가 없는 업무는 주소를 추정하지 않는다',()=>{
  assert.match(sourceReferencesHTML([]),/등록된 원문 링크가 없습니다/);
  assert.doesNotMatch(taskDetailContent({title:'수동 업무',status:'todo',source_refs:[]}),/<a /);
 });
+
+test('가져온 자료의 제목과 근거 본문도 상세 화면에서 표시한다',()=>{
+ const html=sourceReferencesHTML([{title:'회의록 원문',context:'견적 검토 후 회신 <검증>',url:''}]);
+ assert.match(html,/회의록 원문/);assert.match(html,/견적 검토 후 회신 &lt;검증&gt;/);
+});
