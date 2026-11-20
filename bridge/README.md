@@ -43,3 +43,18 @@ Supabase의 기본 OAuth scope는 OIDC용 `openid email`입니다. DB 쓰기 권
 - [OpenAI OAuth 인증](https://developers.openai.com/plugins/build/auth)
 - [ChatGPT MCP 및 조직 권한](https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt)
 - [Claude remote MCP 연결](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)
+
+## 공통 서버 배포 자동화 (2026-11-20 추가)
+
+저장소 루트의 `render.yaml`은 공통 웹/MCP 서버를 위한 Render Blueprint입니다. 파일을 추가하는 것만으로 서버를 생성하거나 요금을 결제하지 않습니다. 호스팅 계정에서 별도 배포를 시작해야 합니다. free 구성은 시험용이며 가용성·유휴 중지 정책을 확인한 뒤 운영 요금제를 결정하세요.
+
+- `npm run build:connected`: 서버 설정을 검증하고 같은 프로젝트/연결 주소로 웹사이트를 빌드합니다. 관리자 키는 허용하지 않습니다.
+- `npm run check:bridge`: 공개 HTTPS 서버의 환경 표식·MCP 메타데이터·익명 접근 차단을 검사합니다. 읽기만 수행하며 사용자 데이터/토큰은 전송하지 않습니다. 전체 OAuth 로그인 성공을 의미하지 않습니다.
+- 공통 서버에서 `/microsoft-callback.html` 및 PDF worker `.mjs`를 제공하도록 정적 파일 경로를 보완했습니다.
+- 서버 설정은 `bridge/.env.example`을 참고하세요. `ASSIGNMENT_OAUTH_CLIENTS`에는 실등록한 앱 ID만 넣습니다. 테스트용 ID로 배포하지 않습니다.
+
+기존 GitHub Pages 주소는 유지됩니다. 공통 서버 주소를 직원에게 배포하려면 Supabase 로그인 리디렉션/동의 화면 주소와 Microsoft SPA 리디렉션을 새 주소에 맞게 추가하고 각각 실제 로그인 시험을 마쳐야 합니다. 기존 주소/운영 프로젝트 설정을 삭제하거나 교체하지 않습니다.
+
+직원은 서버 주소·DB 키·앱 ID를 입력하지 않는 것이 목표입니다. 운영자가 한 번 등록한 연결을 직원이 AI 설정에서 추가하고 자신의 이음 계정으로 동의합니다. 개인 AI 계정에서 커스텀 연결 메뉴가 지원되는지 실제 계정에서 확인해야 하며, 지원되지 않으면 기존 파일/답변 가져오기를 유지합니다.
+
+공식 배포 구성 참고: https://render.com/docs/blueprint-spec

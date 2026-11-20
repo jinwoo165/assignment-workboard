@@ -11,7 +11,9 @@
     "build:deploy": "node scripts/check-isolation.mjs --deployment && vite build --base=./ --outDir docs && node scripts/check-isolation.mjs",
     "test:database": "node tests/assignment-database.integration.mjs",
     "build:database": "node scripts/build-assignment-database.mjs",
-    "start": "node bridge/server.js"
+    "start": "node bridge/server.js",
+    "build:connected": "node scripts/build-connected.mjs",
+    "check:bridge": "node scripts/check-bridge.mjs"
   },
   "dependencies": {
     "@azure/msal-browser": "^5.30.0",

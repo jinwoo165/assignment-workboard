@@ -1,0 +1,27 @@
+# Creates a separate service only after the operator starts a Blueprint deployment.
+# Review the hosting plan before confirming creation. No service is created by this file.
+services:
+  - type: web
+    name: ieum-personal-ai-bridge
+    runtime: node
+    plan: free
+    buildCommand: npm ci --ignore-scripts && node scripts/build-connected.mjs
+    startCommand: node bridge/server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: ASSIGNMENT_ENVIRONMENT
+        value: assignment
+      - key: ASSIGNMENT_PROJECT_REF
+        sync: false
+      - key: ASSIGNMENT_SUPABASE_URL
+        sync: false
+      - key: ASSIGNMENT_SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: ASSIGNMENT_MCP_URL
+        sync: false
+      - key: ASSIGNMENT_OAUTH_CLIENTS
+        sync: false
+      - key: ASSIGNMENT_STATIC_DIR
+        value: docs
