@@ -1,0 +1,8 @@
+{
+  "type": "ieum.import",
+  "version": 1,
+  "tasks": [
+    {"id":"sample-estimate","title":"[예제] 수정 견적 검토 후 회신","project":"협력사 협의","due_date":null,"next_action":"변경 금액과 계약 조건을 대조한 뒤 검토 의견을 회신한다.","source_refs":[{"title":"합성 주간회의록","url":"","context":"수정 견적의 변경 사항을 검토하고 담당자에게 회신하기로 했다."}]},
+    {"id":"sample-report","title":"[예제] 주간보고에 결정 사항 반영","project":"업무 보고","due_date":null,"next_action":"이번 회의의 결정 사항과 미결 과제를 보고서에 작성한다.","source_refs":[{"title":"합성 주간회의록","url":"","context":"주간보고에 결정 사항과 다음 주 계획을 반영한다."}]}
+  ]
+}

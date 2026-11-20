@@ -1,0 +1,1 @@
+{"type":"ieum.import","version":1,"tasks":[{"id":"sample-estimate","title":"[예제] 수정 견적 검토 후 회신","project":"협력사 협의","due_date":null,"next_action":"후속 수정본의 단가 변경 사항을 확인한다.","source_refs":[{"title":"합성 후속 메일","url":"","context":"수정 견적 v2에 단가 변경이 추가되었다. 기존 완료 여부는 담당자 확인이 필요하다."}]}]}
