@@ -1,0 +1,10 @@
+import {validateAssignmentConfig} from './assignment-config.js';
+const config=validateAssignmentConfig(import.meta.env);
+export const SUPABASE_URL=config.url||'';
+export const SUPABASE_KEY=config.key||'';
+export const LOGIN_CONFIGURED=config.configured;
+export const CONFIG_ERROR=config.error;
+export const ASSIGNMENT_PROJECT_REF=config.ref||'';
+export const ASSIGNMENT_MCP_URL=config.mcp||'';
+export const OAUTH_PROVIDERS=String(import.meta.env.VITE_ASSIGNMENT_OAUTH_PROVIDERS||'').split(',').map(s=>s.trim()).filter(s=>['azure','google'].includes(s));
+export const SIGNUP_ENABLED=import.meta.env.VITE_ASSIGNMENT_SIGNUP_ENABLED!=='false';

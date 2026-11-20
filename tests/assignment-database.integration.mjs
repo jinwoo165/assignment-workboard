@@ -1,0 +1,80 @@
+process.on('uncaughtException',e=>{console.error(e.message,e.detail,e.where,e.position,e.query?.slice(Number(e.position)-180,Number(e.position)+100));process.exit(1)});
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {createRequire} from 'node:module';
+import {databaseSQL} from '../scripts/build-assignment-database.mjs';
+const require=createRequire(import.meta.url);
+const {PGlite}=require(process.env.PGLITE_MODULE||'@electric-sql/pglite');
+const db=new PGlite();
+let passed=0;
+await db.exec(`create role anon; create role authenticated; create role service_role bypassrls; create schema auth;
+create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);
+create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;
+create function auth.uid() returns uuid language sql stable as $$select nullif(auth.jwt()->>'sub','')::uuid$$;
+grant usage on schema public,auth to anon,authenticated,service_role;
+grant execute on function auth.uid(),auth.jwt() to anon,authenticated,service_role;
+create publication supabase_realtime;
+`);
+await db.exec(databaseSQL());passed++;
+const u1='11111111-1111-4111-8111-111111111111',u2='22222222-2222-4222-8222-222222222222',u3='33333333-3333-4333-8333-333333333333';
+await db.query('insert into auth.users values ($1,$2,now()),($3,$4,now()),($5,$6,null)',[u1,'a@example.test',u2,'b@example.test',u3,'c@example.test']);
+async function asUser(id,email,fn){await db.exec('set role authenticated');await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:id,email,is_anonymous:false})]);try{return await fn()}finally{await db.exec('reset role');await db.exec("select set_config('request.jwt.claims','{}',false)")}}
+async function fail(fn,pattern){await assert.rejects(fn,pattern);passed++;}
+const w1=await asUser(u1,'a@example.test',async()=>{const r=await db.query('select (public.ensure_assignment_workspace()).*');return r.rows[0].id});
+const w2=await asUser(u2,'b@example.test',async()=>{const r=await db.query('select (public.ensure_assignment_workspace()).*');return r.rows[0].id});
+assert.notEqual(w1,w2);passed++;
+await asUser(u1,'a@example.test',async()=>{assert.equal((await db.query('select (public.ensure_assignment_workspace()).id')).rows[0].id,w1);assert.equal((await db.query('select * from public.workspaces')).rows.length,1);passed++});
+await fail(()=>asUser(u3,'c@example.test',()=>db.query('select public.ensure_assignment_workspace()')),/Verified email required/);
+const feed={type:'dahandot.feed',schema_version:1,batch_id:'batch-1',generated_at:new Date().toISOString(),tasks:[{id:'task-1',title:'합성 업무',source_refs:[{url:'https://example.test/source',title:'합성 원문'}]}],events:[],sources:[]};
+await asUser(u1,'a@example.test',async()=>{await db.query('select public.assignment_ingest_feed($1::jsonb)',[JSON.stringify(feed)]);const tasks=(await db.query('select * from public.tasks')).rows;assert.equal(tasks.length,1);assert.equal(tasks[0].workspace_id,w1);assert.ok(tasks[0].id.startsWith('assignment:'+w1+':'));passed++;const r=await db.query('select public.assignment_ingest_feed($1::jsonb) as result',[JSON.stringify(feed)]);assert.equal(r.rows[0].result.duplicate,true);passed++});
+await asUser(u2,'b@example.test',async()=>{assert.equal((await db.query('select * from public.tasks')).rows.length,0);await db.query('select public.assignment_ingest_feed($1::jsonb)',[JSON.stringify(feed)]);assert.equal((await db.query('select * from public.tasks')).rows.length,1);passed++});
+await asUser(u1,'a@example.test',async()=>{await fail(()=>db.query('select public.ingest_workdesk_feed($1,$2::jsonb)',[w2,JSON.stringify(feed)]),/permission denied/);await fail(()=>db.query('select public.assignment_resolve_message($1,$2,$3::jsonb,false)',['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','hello','[]']),/Message not available/);});
+const fullOtherId='assignment:'+w1+':task-1';
+await asUser(u2,'b@example.test',async()=>{
+ const hostile={...feed,batch_id:'other-full-id',tasks:[{...feed.tasks[0],id:fullOtherId,title:'다른 소유자 변경 시도'}]};
+ await db.query('select public.assignment_ingest_feed($1::jsonb)',[JSON.stringify(hostile)]);
+ assert.equal((await db.query('select title from public.tasks where id=$1',[fullOtherId])).rows.length,0);passed++;
+ await fail(()=>db.query('select public.save_task($1,1,$2::jsonb)',[fullOtherId,JSON.stringify({title:'cross-owner update'})]),/Task not found/);
+});
+await asUser(u1,'a@example.test',async()=>{
+ const initial=(await db.query('select * from public.tasks where id=$1',[fullOtherId])).rows[0];assert.equal(initial.title,'합성 업무');passed++;
+ await db.query('select public.save_task($1,$2,$3::jsonb)',[fullOtherId,initial.revision,JSON.stringify({status:'done',note:'사용자 보존 메모',remaining_action:'',next_review_on:null})]);
+ const changed={...feed,batch_id:'changed-source',generated_at:new Date().toISOString(),tasks:[{...feed.tasks[0],title:'원문 제목 변경'}]};
+ await db.query('select public.assignment_ingest_feed($1::jsonb)',[JSON.stringify(changed)]);
+ const saved=(await db.query('select * from public.tasks where id=$1',[fullOtherId])).rows[0];assert.equal(saved.status,'done');assert.equal(saved.note,'사용자 보존 메모');assert.equal(saved.pending_review,true);passed++;
+ await fail(()=>db.query('select public.save_task($1,$2,$3::jsonb)',[fullOtherId,initial.revision,JSON.stringify({title:'stale update'})]),/CONFLICT/);
+ const mid='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+ await db.query('select public.record_workdesk_message($1,$2,$3,$4,null)',[w1,mid,'내 업무 메모',fullOtherId]);
+ assert.equal((await db.query('select * from public.workdesk_messages where id=$1',[mid])).rows.length,1);passed++;
+});
+await asUser(u2,'b@example.test',async()=>{
+ await fail(()=>db.query('select public.assignment_resolve_message($1,$2,$3::jsonb,false)',['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','남의 메시지 반영','[]']),/Message not available/);
+});
+await asUser(u1,'b@example.test',async()=>{const rows=(await db.query('select * from public.tasks')).rows;assert.equal(rows.length,1);assert.equal(rows[0].workspace_id,w1);passed++});
+await asUser(u1,'a@example.test',async()=>{
+ await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:u1,email:'a@example.test',client_id:'unregistered-client'})]);
+ assert.equal((await db.query('select * from public.tasks')).rows.length,0);passed++;
+ await fail(()=>db.query('select public.assignment_ingest_feed($1::jsonb)',[JSON.stringify(feed)]),/OAuth write grant required/);
+ await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:u1,email:'a@example.test',client_id:'approved-client',assignment_environment:'assignment',assignment_scopes:['workboard:read']})]);
+ assert.equal((await db.query('select * from public.tasks')).rows.length,1);passed++;
+ await fail(()=>db.query("select public.save_task('forbidden-direct',null,'{\"title\":\"read token write\"}'::jsonb)"),/OAuth write grant required/);
+ await fail(()=>db.query('select public.assignment_ingest_feed($1::jsonb)',[JSON.stringify(feed)]),/OAuth write grant required/);
+ await db.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:u1,email:'a@example.test',client_id:'approved-client',assignment_environment:'assignment',assignment_scopes:['workboard:read','workboard:write']})]);
+ assert.equal((await db.query('select public.assignment_ingest_feed($1::jsonb) as result',[JSON.stringify(feed)])).rows[0].result.duplicate,true);passed++;
+});
+await fail(()=>db.exec(databaseSQL()),/Existing workboard schema detected/);await db.exec('rollback');
+await db.exec('set role anon');await fail(()=>db.query('select public.ensure_assignment_workspace()'),/permission denied/);await fail(()=>db.query('select * from public.tasks'),/permission denied/);await db.exec('reset role');
+await db.exec('create role supabase_auth_admin');
+await db.exec(fs.readFileSync(new URL('../bridge/oauth-token-hook.sql',import.meta.url),'utf8'));passed++;
+const cid1='cccccccc-cccc-4ccc-8ccc-cccccccccccc',cid2='dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+await db.query("insert into workdesk_private.assignment_oauth_clients values ($1,'chatgpt','https://assignment.example.test/mcp',true,true),($2,'claude','https://assignment.example.test/mcp',false,true)",[cid1,cid2]);
+async function hook(claims){await db.exec('set role supabase_auth_admin');try{return (await db.query('select public.assignment_access_token_hook($1::jsonb) as result',[JSON.stringify({claims,user_id:u1})])).rows[0].result.claims}finally{await db.exec('reset role')}}
+const injected={sub:u1,email:'a@example.test',aud:'authenticated',client_id:'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',assignment_environment:'assignment',assignment_scopes:['workboard:read','workboard:write'],user_metadata:{assignment_environment:'assignment',assignment_scopes:['workboard:write']}};
+const unknown=await hook(injected);assert.deepEqual(unknown.assignment_scopes,[]);assert.equal(unknown.assignment_environment,undefined);passed++;
+const writer=await hook({...injected,client_id:cid1});assert.deepEqual(writer.assignment_scopes,['workboard:read','workboard:write']);assert.deepEqual(writer.aud,['authenticated','https://assignment.example.test/mcp']);assert.equal(writer.assignment_environment,'assignment');passed++;
+const reader=await hook({...injected,client_id:cid2});assert.deepEqual(reader.assignment_scopes,['workboard:read']);passed++;
+const webClaims={sub:u1,email:'a@example.test',aud:'authenticated',role:'authenticated',user_metadata:{display_name:'sample'}};
+assert.deepEqual(await hook(webClaims),webClaims);passed++;
+await asUser(u1,'a@example.test',async()=>{await fail(()=>db.query('select public.assignment_access_token_hook($1::jsonb)',[JSON.stringify({claims:injected})]),/permission denied/)});
+await db.query('update workdesk_private.assignment_oauth_clients set enabled=false where client_id=$1',[cid1]);assert.deepEqual((await hook({...injected,client_id:cid1})).assignment_scopes,[]);passed++;
+console.log(JSON.stringify({passed,engine:'PGlite PostgreSQL',hostedAuthTested:false}));await db.close();

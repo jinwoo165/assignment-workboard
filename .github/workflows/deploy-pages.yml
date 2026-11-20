@@ -1,0 +1,41 @@
+name: Deploy assignment only
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: assignment-pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VITE_ASSIGNMENT_SUPABASE_URL: ${{ vars.ASSIGNMENT_SUPABASE_URL }}
+      VITE_ASSIGNMENT_PROJECT_REF: ${{ vars.ASSIGNMENT_PROJECT_REF }}
+      VITE_ASSIGNMENT_SUPABASE_KEY: ${{ vars.ASSIGNMENT_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_ASSIGNMENT_OAUTH_PROVIDERS: ${{ vars.ASSIGNMENT_OAUTH_PROVIDERS }}
+      VITE_ASSIGNMENT_MCP_URL: ${{ vars.ASSIGNMENT_MCP_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run build:deploy
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: assignment-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy only this repository
+        id: deployment
+        uses: actions/deploy-pages@v4

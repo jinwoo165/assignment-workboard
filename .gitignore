@@ -1,0 +1,10 @@
+node_modules/
+.env*
+*.log
+private/
+
+.qa/
+
+!.env.example
+.env.local
+artifacts/
