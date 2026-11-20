@@ -1,3 +1,22 @@
+# 이음 3.0 — 개인 OneDrive 저장 전환
+
+직원 업무를 배포자의 Supabase 대신 본인의 회사 OneDrive에 저장하도록 재구축한 버전입니다. 기존 화면과 업무 관리 기능을 유지하고 Microsoft 로그인, 개인 저장, 충돌 처리, 백업 복원, OneNote 선택 읽기를 연결했습니다.
+
+**Microsoft 회사 앱 등록·실계정 검증 전입니다.** 운영자는 Client ID와 Tenant ID를 설정해야 합니다. 설정이 없으면 시작 화면에서 사용을 차단하며 공용 저장소로 되돌아가지 않습니다. 기존 Supabase 자료는 자동 삭제하지 않습니다.
+
+설정·이전·제약·검증 기준: [개인 OneDrive 전환 안내](handoff/개인OneDrive전환.md)
+
+```sh
+npm ci --ignore-scripts
+npm test
+npm run build
+npm run check:isolation
+```
+
+기존 설명은 이전 Supabase 버전의 기록입니다. 새 버전의 저장·로그인 기준은 위 전환 안내를 따릅니다.
+
+---
+
 # 이음 — 실사용 업무 흐름 2.16
 
 [로그인 후 사용](https://jinwoo165.github.io/assignment-workboard/) · [실사용 설정](handoff/실사용설정.md)
