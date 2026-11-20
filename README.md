@@ -1,3 +1,14 @@
+# 이음 — 과제용 배포본
+
+현재 배포와 발표 방법은 [발표와배포](handoff/발표와배포.md)를 먼저 확인하세요.
+
+- [실제 계정용](https://jinwoo165.github.io/assignment-workboard/)
+- [발표용 시나리오](https://jinwoo165.github.io/assignment-workboard/?presentation=1)
+- 발표용 AI 분석·OneDrive 조회는 합성 시나리오입니다. 실제 로그인·대화·업무 저장과 구분합니다.
+
+---
+아래는 초기 구축 기술 기록입니다. 최신 범위는 위 안내와 VERIFICATION.md의 마지막 항목이 우선합니다.
+
 # 과제용 개인 업무보드
 
 실제로 사용하는 업무보드 v2.14.1의 화면·업무 로직을 독립 환경으로 복제한 프로젝트입니다.
