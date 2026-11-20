@@ -1,3 +1,4 @@
+import {mountCollector} from './collector-delivery.js';
 import {mountTaskEdit} from './assignment-task-edit.js';
 import {mountImport} from './assignment-import.js';
 import {createClient} from '@supabase/supabase-js';
@@ -32,7 +33,20 @@ const db=!demo&&LOGIN_CONFIGURED?createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{s
 const authActions=db?passwordActions(db.auth,location.origin+location.pathname):null;
 let assignmentStorage;try{assignmentStorage=window.localStorage;}catch{}
 let aiProvider=selectedProvider(assignmentStorage);
-function openAssignmentAI(){mountImport(document.querySelector('#historyDetail'),{tasks:state.tasks,workspace:state.workspace?.id,demo,onSave:async feed=>{if(demo){for(const item of feed.tasks){const old=state.tasks.find(t=>t.id===item.id);if(old)Object.assign(old,item,{pending_review:true});else state.tasks.push({...item,origin:'ai',status:'todo',revision:1,note:'',created_at:new Date().toISOString()});}render();return '체험 화면에 반영했습니다. 새로고침하면 초기화됩니다.';}const result=await db.rpc('assignment_ingest_feed',{p_feed:feed});if(result.error)throw result.error;await refresh(true);return '본인 업무 공간에 저장했습니다. 업무 목록에서 확인하세요.';}});}
+async function saveAssignmentFeed(feed){
+ if(demo){
+  for(const item of feed.tasks){const old=state.tasks.find(t=>t.id===item.id);if(old)Object.assign(old,item,{pending_review:true});else state.tasks.push({...item,origin:'ai',status:'todo',revision:1,note:'',created_at:new Date().toISOString()});}
+  for(const event of feed.events||[]){const row={...event,start_at:event.start,end_at:event.end},old=state.events.find(e=>e.id===event.id);if(old)Object.assign(old,row);else state.events.push(row);}
+  render();return '체험 보드에 반영했습니다. 새로고침하면 초기화됩니다.';
+ }
+ const result=await db.rpc('assignment_ingest_feed',{p_feed:feed});if(result.error)throw result.error;
+ const receipt=await db.from('sync_runs').select('id').eq('id',feed.batch_id.startsWith('assignment:'+state.workspace.id+':')?feed.batch_id:'assignment:'+state.workspace.id+':'+feed.batch_id).single();
+ if(receipt.error||!receipt.data)throw Error('저장 결과를 재확인하지 못했습니다. 같은 전송으로 재시도하세요.');
+ await refresh(true);if(state.error)throw Error('저장 요청은 성공했지만 보드 재조회에 실패했습니다. '+state.error);
+ return result.data?.duplicate?'이미 반영한 전송입니다. 중복 등록하지 않았습니다.':'본인 업무 공간에 저장된 전송을 확인했습니다. 목록이 아직 바뀌지 않았다면 새로고침하세요.';
+}
+function openCollector(){mountCollector(document.querySelector('#historyDetail'),{tasks:state.tasks,events:state.events,workspace:state.workspace?.id,boardURL:location.origin+location.pathname,getTasks:()=>state.tasks,demo,onSave:saveAssignmentFeed});}
+function openAssignmentAI(){mountImport(document.querySelector('#historyDetail'),{tasks:state.tasks,workspace:state.workspace?.id,demo,onSave:saveAssignmentFeed,onCollector:openCollector});}
 const $=s=>document.querySelector(s), app=$('#app');
 const state={user:null,workspace:null,tasks:[],events:[],runs:[],links:[],history:[],messages:[],overrides:[],sourceEvents:[],files:[],fileRuns:[],fileError:'',fileSummaries:[],summaryError:'',collectionResults:[],collectionError:'',updateAvailable:null,sourceSelected:null,rail:'files',mobilePanel:'work',calendarPane:'month',calendarScope:'day',historyMonth:'',historyError:'',historyLoading:false,weather:{},weatherErrors:{},weatherBusy:false,weatherPage:0,view:'work',taskFilter:'today',showRemovedLinks:false,linkBusy:false,briefingDismissals:[],briefingError:'',briefingBusy:false,showHiddenBriefing:false,itemVisibility:[],itemVisibilityError:'',itemVisibilityBusy:false,showHiddenAgenda:false,showHiddenFiles:false,query:'',searchText:'',searchFiles:[],searchFilesLoaded:false,searchFilesLoading:false,searchFilesError:'',month:day().slice(0,7),selected:day(),synced:null,realtime:false,error:'',loading:false};
 const views={
