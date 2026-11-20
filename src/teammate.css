@@ -1,0 +1,87 @@
+/* AI Teammate — official IPARK CI, charcoal / white / HDC red.
+   Brand changes are scoped to this assignment application. */
+:root{--bg:#f5f5f6;--surface:#fff;--soft:#f9ebee;--text:#212121;--muted:#707077;--green:#b7132b;--on-green:#fff;--line:#e4e4e8;--hover:#f7f7f8;--brand-red:#f01428;--brand-charcoal:#212121;--accent:#b7132b;color:var(--text);background:var(--bg)}
+:root[data-theme=dark]{--bg:#171719;--surface:#242427;--soft:#39272d;--text:#f1f1f3;--muted:#b0b0b8;--green:#ff8291;--on-green:#211619;--line:#414147;--hover:#303035;--accent:#ff8291}
+body{color:var(--text);background:var(--bg)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline-color:var(--green)}
+.btn.primary,.sidebar-compose{background:#bc132c;border-color:#bc132c;color:#fff}
+.btn.primary:hover,.sidebar-compose:hover{background:#a71027}
+input,textarea,select{color:var(--text);border-color:var(--line)}
+.sidebar .brand.home-button{margin:0;padding:10px 0;min-width:0;letter-spacing:0;flex:1;display:flex;align-items:center}
+.company-logo{display:block;width:100%;max-width:195px;height:auto;object-fit:contain;background:#fff;border-radius:0}
+.sidebar-heading{gap:12px;margin:0 8px 12px;min-height:42px;flex-shrink:0}
+.sidebar-heading .brand-refresh{flex:0 0 30px;width:30px;min-height:32px;color:var(--muted);font-size:19px}
+.sidebar .owner.teammate-name{display:block;border:0;padding:12px 8px 20px;margin:0;color:var(--text);font-size:25px;font-weight:750;letter-spacing:-1px;white-space:nowrap}
+.sidebar .owner.teammate-name small{font-size:12px;line-height:1.5;letter-spacing:0;color:var(--muted);font-weight:400;margin-top:7px}
+.sidebar .nav{flex:0 0 auto;gap:3px;margin-top:14px}
+.nav button{position:relative;border-radius:7px;color:var(--muted)}
+.nav button.active{background:var(--soft);color:var(--green);font-weight:750}
+.nav button.active:before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:3px;background:var(--brand-red);border-radius:2px}
+.sidebar .sidebar-compose{margin:18px 8px 0;width:calc(100% - 16px);min-height:42px;flex-shrink:0}
+.sidebar .work-progress{margin:16px 8px 0;border-color:var(--line);border-radius:10px}
+.progress-metrics button,.progress-metrics button+button{background:var(--hover);color:var(--text)}
+.progress-metrics button>span,.progress-metrics button+button>span{color:var(--green)}
+.sidebar .sidebar-bottom{display:flex;flex-direction:column;gap:12px;padding:18px 8px 0;margin-top:auto;min-width:0;flex-shrink:0}
+#liveStatus{font-size:11px;line-height:1.6;overflow-wrap:anywhere;color:var(--muted)}
+#liveStatus small{font-size:10px}
+.utility-nav{display:grid;grid-template-columns:minmax(0,1fr);gap:2px;border-top:1px solid var(--line);padding-top:7px}
+.utility-nav>button{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:40px;width:100%;text-align:left;padding:8px 10px;border-radius:6px;font-size:13px;font-weight:600;white-space:normal;line-height:1.5;color:var(--text)}
+.utility-nav>button:hover{background:var(--hover)}
+.utility-nav>button>span:last-child{color:var(--muted);font-size:16px}
+.utility-popover{position:fixed;inset:auto auto 20px 250px;margin:0;width:340px;max-width:calc(100vw - 24px);max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain;padding:20px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 50px #0002}
+.utility-popover::backdrop{background:#00000012}
+.utility-popover header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.utility-popover h2{font-size:18px}
+.utility-popover header button{font-size:24px;min-width:36px;min-height:36px;color:var(--muted)}
+.utility-popover>p{font-size:12px;color:var(--muted);line-height:1.65;margin-bottom:14px}
+.utility-popover .utility-item{display:flex;flex-direction:column;gap:5px;width:100%;text-align:left;padding:14px 10px;min-height:44px;border-radius:7px;white-space:normal;overflow-wrap:anywhere;line-height:1.5}
+.utility-item strong{font-size:14px;font-weight:650}
+.utility-item small{font-size:12px;color:var(--muted);font-weight:400}
+.utility-item:hover{background:var(--hover)}
+.utility-logout{border-top:1px solid var(--line);border-radius:0!important;margin-top:10px;color:var(--green)}
+.utility-mode-note{margin:12px 10px!important}
+.utility-popover .mobile-material-entry{display:none}
+.topbar{border-bottom:1px solid var(--line)}
+.topbar-actions{margin-left:auto}
+.briefing{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--brand-red)}
+.ieum-steps [aria-current=step]{background:#bc132c;border-color:#bc132c;color:#fff}
+.title-copy .sub{color:var(--muted)}
+.story-badge.has-stories{background:var(--soft);color:var(--green)}
+.mobile-tools{font-size:24px;min-width:36px;min-height:40px;flex-shrink:0}
+[data-theme=dark] .sidebar-heading .brand.home-button,[data-theme=dark] .mobile-brand .brand.home-button{background:#fff;border-radius:4px;padding:10px 6px}
+[data-theme=dark] .progress-metrics button,[data-theme=dark] .progress-metrics button+button{background:var(--hover)}
+@media(min-width:901px){
+ .layout{grid-template-columns:248px minmax(0,1fr)}
+ body .sidebar{height:100dvh;padding:22px 14px 16px;overflow-y:auto;scrollbar-width:thin;background:var(--surface)}
+ .sidebar>*{flex-shrink:0}
+ .sidebar .global-search{margin-inline:8px}
+ .sidebar .nav button{min-height:42px;padding:10px 12px;font-size:14px}
+ .sidebar .progress-ring{width:108px;height:108px;margin:6px auto}
+}
+@media(min-width:901px) and (max-height:800px){
+ body .sidebar{padding-top:14px;padding-bottom:12px}
+ .sidebar-heading{margin-bottom:2px}
+ .sidebar .owner.teammate-name{padding-block:6px 12px;font-size:23px}
+ .sidebar .owner.teammate-name small{display:none}
+ .sidebar .nav{margin-top:10px;gap:0}
+ .sidebar .nav button{min-height:36px;padding-block:7px}
+ .sidebar .sidebar-compose{margin-top:12px;min-height:38px}
+ .sidebar .work-progress{margin-top:12px;padding:9px}
+ .sidebar .progress-ring{width:80px;height:80px;margin:5px auto}
+ .sidebar .progress-ring strong{font-size:25px}
+ .sidebar .sidebar-bottom{padding-top:12px;gap:7px}
+}
+@media(max-width:900px){
+ body .sidebar .owner.teammate-name,body .sidebar .sidebar-bottom{display:none}
+ .mobile-brand .brand.home-button{width:112px;flex:0 0 112px;padding:5px 0}
+ .mobile-brand .company-logo{width:112px;max-width:100%;height:auto}
+ .mobile-brand{gap:6px}
+ body .mobile-brand #mobileView{font-size:17px;letter-spacing:-.5px;padding-left:4px;min-width:0}
+ .mobile-brand .brand-refresh{display:none}
+ .utility-popover{inset:auto 12px 16px 12px;width:auto;max-height:calc(100dvh - 32px)}
+ .utility-popover .mobile-material-entry{display:flex}
+}
+.login-story .brand{margin-bottom:50px}
+.login-story .company-logo{max-width:300px;padding:10px;background:#fff}
+.login-product-name{font-size:26px;font-weight:750;letter-spacing:-.8px;margin-bottom:28px}
+.login-story{background:var(--surface);color:var(--text);border-right:1px solid var(--line)}
