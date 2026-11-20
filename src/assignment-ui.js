@@ -1,3 +1,4 @@
+import {importPrompt} from './assignment-import.js';
 import {escapeHTML as esc} from './model.js';
 export const AI_PROVIDERS={chatgpt:{name:'ChatGPT',url:'https://chatgpt.com/'},claude:{name:'Claude',url:'https://claude.ai/'}};
 export const AI_PREFERENCE_KEY='assignment-workboard.ai-provider.v1';
@@ -6,7 +7,7 @@ export function chooseProvider(id,storage){if(!Object.hasOwn(AI_PROVIDERS,id))th
 export function mcpAddress(value){try{const url=new URL(value);if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash)return '';return url.href;}catch{return '';}}
 export function collectionPrompt({boardURL,workspaceId,source='지정한 자료',provider='chatgpt'}){
  const ai=AI_PROVIDERS[provider]||AI_PROVIDERS.chatgpt;
- return `${ai.name}에 연결한 과제용 업무보드에서 ${source}를 확인해 반영해줘.\n과제용 주소: ${boardURL}\n대상 작업공간: ${workspaceId||'로그인한 본인 작업공간'}\n먼저 연결된 계정과 작업공간을 조회하고 이 대상과 일치하는지 확인해. 운영 업무보드에는 접근하거나 쓰지 마. 허용된 원본 범위만 읽고, 현재 업무·완료·보관·메모·다음 확인일을 먼저 확인해. 수집으로 개인 수정사항을 덮어쓰지 말고, 중복 자료는 다시 만들지 마. 실제 읽은 자료와 원문 링크를 남겨. 조회하지 못했거나 연결되지 않은 자료는 미확인으로 표시하고, 저장 후 다시 조회해 확인한 결과만 알려줘.`;
+ return `${ai.name}에서 ${source}를 분석해줘. 과제용 주소: ${boardURL} / 작업공간: ${workspaceId||'로그인한 본인 공간'}\n운영 업무보드에는 접근하거나 쓰지 마. 읽을 권한이 있는 자료만 확인하고 아래 형식으로 결과를 작성해. 이음의 내 자료 가져오기에 직접 전달할 예정이야.\n${importPrompt()}`;
 }
 export function assignmentConnectionHTML({provider='chatgpt',mcpURL='',boardURL,workspaceId,demo=false}){
  const ai=AI_PROVIDERS[provider]||AI_PROVIDERS.chatgpt,endpoint=mcpAddress(mcpURL),prompt=collectionPrompt({boardURL,workspaceId,provider});
