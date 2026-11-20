@@ -4,3 +4,14 @@
 .ieum-import {max-width:850px}.ieum-import textarea,.ieum-import input:not([type=file]),.ieum-import select{width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--line,#ccc);border-radius:8px;background:var(--panel,#fff);color:inherit}.ieum-import label{display:block;margin:12px 0 5px}.ieum-import details{padding:12px 0}.ieum-import summary{cursor:pointer;font-weight:600}.ieum-import-card{border:1px solid var(--line,#ccc);border-radius:12px;padding:16px;margin:14px 0}.ieum-import-card p{white-space:pre-wrap;overflow-wrap:anywhere}.ieum-import [data-feedback]{white-space:pre-wrap}
 .ieum-import input[type=checkbox]{width:auto}
 .ieum-presentation{border:1px solid #b63b36;border-left:5px solid #b63b36;border-radius:12px;padding:14px 18px;margin:0 0 18px;background:var(--panel,#fff)}.ieum-presentation strong{font-size:18px}.ieum-presentation p{font-size:12px;margin:5px 0 12px;color:var(--muted,#68716c)}.ieum-steps{display:flex;gap:8px;flex-wrap:wrap}.ieum-steps .btn{flex:1;min-width:135px}
+
+/* Guided import: only one stage is visible at a time. */
+.ieum-import [hidden],.dialog-foot [hidden]{display:none!important}
+.ieum-steps{display:flex;gap:8px;margin:0 0 20px;flex-wrap:wrap;font-size:13px}
+.ieum-steps span{padding:8px 12px;border:1px solid var(--border,#d9e1df);border-radius:20px;opacity:.65}
+.ieum-steps [aria-current="step"]{background:#246457;color:white;opacity:1;border-color:#246457}
+.ieum-import .ieum-check{display:flex;align-items:center;gap:8px}
+.ieum-import .ieum-check input{width:auto}
+.ieum-import h3:focus{outline:none}
+.ieum-start{padding:16px 20px;margin:0 0 16px;border:1px solid var(--border,#d9e1df);border-radius:12px}
+.ieum-start p{margin:6px 0 12px}
