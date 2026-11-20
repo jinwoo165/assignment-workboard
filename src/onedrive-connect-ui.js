@@ -1,7 +1,7 @@
 import {escapeHTML as esc} from './model.js';
 import {createOneDriveClient,validateMicrosoftConfig,boundedDownload} from './onedrive-client.js';
 import {extractDocument} from './document-reader.js';
-export function mountOneDriveConnect(dialog,{workspace,onImport,onSaveMetadata,clientId='',tenant='organizations'}){
+export function mountOneDriveConnect(dialog,{workspace,onImport,onSaveMetadata,clientId='',tenant='organizations',sharedClient=null}){
  const key='assignment-workboard.microsoft-config:'+workspace;let remembered={};try{remembered=JSON.parse(localStorage.getItem(key)||'{}');}catch{}
  clientId=clientId||remembered.clientId||'';tenant=remembered.tenant||tenant;
  const redirectUri=new URL('microsoft-callback.html',location.origin+location.pathname).href;
@@ -30,5 +30,9 @@ export function mountOneDriveConnect(dialog,{workspace,onImport,onSaveMetadata,c
  await client.clear();closed=true;dialog.close();onImport(documents.join('\n\n')+(failures.length?'\n\n[미처리 자료]\n'+failures.join('\n'):''));
  }catch(e){say('저장하지 못했습니다: '+e.message);}finally{busy=false;if(!closed)dialog.querySelectorAll('button,input').forEach(n=>n.disabled=false);}
  };
- if(clientId)void prepare();if(!dialog.open)dialog.showModal();
+ if(sharedClient){
+ dialog.querySelector('details').remove();
+ client={read:path=>sharedClient.read(path,['Files.Read']),clear:async()=>{},login:async()=>{await sharedClient.consent(['Files.Read']);return {name:'현재 업무보드 계정',username:''};}};
+ $('[data-ms-login]').disabled=false;$('[data-ms-login]').textContent='파일 읽기 승인 · 폴더 보기';
+ }else if(clientId)void prepare();if(!dialog.open)dialog.showModal();
 }

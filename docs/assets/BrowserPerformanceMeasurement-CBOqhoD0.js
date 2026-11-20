@@ -1,0 +1,1 @@
+export{BrowserPerformanceMeasurement}from"./dist-C5bmLM_T.js";
