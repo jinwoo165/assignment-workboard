@@ -85,3 +85,21 @@ input,textarea,select{color:var(--text);border-color:var(--line)}
 .login-story .company-logo{max-width:300px;padding:10px;background:#fff}
 .login-product-name{font-size:26px;font-weight:750;letter-spacing:-.8px;margin-bottom:28px}
 .login-story{background:var(--surface);color:var(--text);border-right:1px solid var(--line)}
+/* Keep all sidebar actions within a typical 720px laptop viewport. */
+@media(min-width:901px) and (max-height:800px){
+ .sidebar .nav button{min-height:32px;line-height:20px;padding-block:6px;font-size:13px}
+ .sidebar .work-progress{display:grid;grid-template-columns:64px minmax(0,1fr);gap:5px 8px;padding:8px}
+ .sidebar .progress-heading{grid-column:1/-1}
+ .sidebar .progress-ring{grid-column:1;grid-row:2/4;width:64px;height:64px;margin:0;align-self:center}
+ .sidebar .progress-ring strong{font-size:21px}
+ .sidebar .progress-ring strong small{font-size:12px}
+ .sidebar .progress-ring>div>span{display:none}
+ .sidebar .progress-metrics{grid-column:2;grid-row:2;align-self:center;margin:0}
+ .sidebar .progress-metrics button{min-height:34px;padding:3px 1px}
+ .sidebar .progress-caption{grid-column:2;grid-row:3;font-size:9px;margin:0;line-height:1.4}
+ .sidebar .progress-review{grid-column:1/-1;min-height:26px}
+ .sidebar .progress-note{display:none}
+ .sidebar .utility-nav>button{min-height:34px;padding-block:6px}
+ .sidebar #liveStatus{font-size:10px;line-height:1.4}
+ .sidebar #liveStatus small{font-size:9px}
+}
