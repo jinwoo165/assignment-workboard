@@ -20,7 +20,7 @@ function officeTextRaw(bytes,extension){
 async function pdfText(bytes){
  const pdfjs=await import('pdfjs-dist/build/pdf.mjs');const worker=await import('pdfjs-dist/build/pdf.worker.min.mjs?url');pdfjs.GlobalWorkerOptions.workerSrc=worker.default;
  const loading=pdfjs.getDocument({data:bytes,isEvalSupported:false,useSystemFonts:true});let doc;
- try{doc=await loading.promise;if(doc.numPages>200)throw Error('PDF는 200쪽 이하로 나누어 주세요.');const parts=[];let length=0;for(let n=1;n<=doc.numPages;n++){const page=await doc.getPage(n);const content=await page.getTextContent();const text=content.items.map(i=>i.str+(i.hasEOL?'\n':' ')).join('');length+=text.length;if(length>MAX_TEXT)throw Error('PDF 본문이 너무 깁니다. 나누어 주세요.');parts.push(`[${n}쪽]\n${text}`);page.cleanup();}const result=parts.join('\n\n');if(!result.replace(/\[\d+쪽\]/g,'').trim())throw Error('텍스트 없는 스캔 PDF입니다. OCR 후 다시 가져오세요.');return result;}finally{if(doc)await doc.destroy();else await loading.destroy();}
+ try{doc=await loading.promise;if(doc.numPages>200)throw Error('PDF는 200쪽 이하로 나누어 주세요.');const parts=[];let length=0;for(let n=1;n<=doc.numPages;n++){const page=await doc.getPage(n);const content=await page.getTextContent();const text=content.items.map(i=>i.str+(i.hasEOL?'\n':' ')).join('');length+=text.length;if(length>MAX_TEXT)throw Error('PDF 본문이 너무 깁니다. 나누어 주세요.');parts.push(`[${n}쪽]\n${text}`);page.cleanup();}const result=parts.join('\n\n');if(!result.replace(/\[\d+쪽\]/g,'').trim())throw Error('텍스트 없는 스캔 PDF입니다. OCR 후 다시 가져오세요.');return result;}finally{await loading.destroy();}
 }
 export async function extractDocument(file){
  if(file.size>MAX_FILE)throw Error('파일당 20MB까지 지원합니다.');const ext=file.name.split('.').pop().toLowerCase();
