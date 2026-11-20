@@ -62,3 +62,11 @@
 - MSAL 5 + redirect bridge + Graph Files.Read + 폴더 탐색/선택 다운로드 구현. 토큰은 메모리만 사용.
 - 실제 회사 앱 Client ID가 없어 Microsoft 실계정 인증/파일 조회는 미검증.
 - 단위/회귀 160개, DB 통합 35개 통과. 최신 브라우저 결과는 후속 기록 참조.
+
+### 배포 브라우저 검증 완료
+- 실사용 배포 commit: 903b1a4b4e56f8a778c1023c8c3b2c41c4c22cec.
+- PDF.js 6의 문서 정리는 loadingTask.destroy()로 수정. 실제 브라우저에서 오류 재현 후 수정 검증.
+- document-check.html: DOCX/XLSX/PPTX/PDF 4개와 ZIP 내부 4개, 총 8건 추출 성공, issues 0개. 합성 문서 기준이며 모든 문서에 대한 호환성을 보장하지 않음.
+- 로그인 유지 및 v2.16.0, 자료 가져오기, OneDrive 연결 설정 화면, 기존 미처리 대화 표시 확인. 사용자 대화는 변경하지 않음.
+- 회사 Microsoft 앱 등록 및 실계정 OAuth/다운로드 검증은 미완료. 자동 LLM 호출은 미구현이며 개인 AI 결과 가져오기 방식.
+
