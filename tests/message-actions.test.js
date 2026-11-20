@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {pendingMessage,parseMessageResult} from '../src/assignment-message-actions.js';
+const message={id:'m1',body:'완료',created_at:'2026-11-20',resolution_status:'pending'},tasks=[{id:'t1',revision:2,status:'todo'}];
+const good={type:'ieum.message',message_id:'m1',reply:'완료 처리',actions:[{kind:'task',id:'t1',expected_revision:2,patch:{status:'done'}}]};
+test('conversation actions reject stale revisions, foreign IDs and unsupported edits',()=>{assert.equal(parseMessageResult(JSON.stringify(good),message,tasks).actions.length,1);for(const a of [{...good.actions[0],expected_revision:1},{...good.actions[0],id:'foreign'},{...good.actions[0],patch:{workspace_id:'x'}},{...good.actions[0],patch:{next_review_on:'2026-02-30'}}])assert.throws(()=>parseMessageResult(JSON.stringify({...good,actions:[a]}),message,tasks));assert.throws(()=>parseMessageResult(JSON.stringify({...good,clarification:true}),message,tasks));});
+test('pending conversations always process oldest first',()=>{assert.equal(pendingMessage([{...message,id:'m2',created_at:'2026-11-21'},message]).id,'m1');});

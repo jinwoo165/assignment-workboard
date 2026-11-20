@@ -54,3 +54,11 @@
 - 실제 계정용 OneDrive URL 등록은 링크 저장 기능이며 자동 파일 조회가 아님.
 - 공통 AI 지침에 사이트 저장 대화와 기존 링크 포함.
 - 153개 단위/회귀 검사, 33개 DB 통합 검사, 배포 빌드 및 운영 연결 차단 검사 통과.
+
+## 2.16 실사용 기능 고도화
+- PDF/DOCX/XLSX/PPTX/ZIP 브라우저 본문 읽기 구현. 공개 합성 예제 및 document-check.html 제공.
+- 한글 XML 숫자 엔터티 처리 회귀 수정, ZIP 크기 제한, 미지원 파일 명시.
+- 대화 요청 미리보기 및 assignment_resolve_message 실제 저장 경로 연결. revision 충돌 및 중복 처리 보호.
+- MSAL 5 + redirect bridge + Graph Files.Read + 폴더 탐색/선택 다운로드 구현. 토큰은 메모리만 사용.
+- 실제 회사 앱 Client ID가 없어 Microsoft 실계정 인증/파일 조회는 미검증.
+- 단위/회귀 160개, DB 통합 35개 통과. 최신 브라우저 결과는 후속 기록 참조.

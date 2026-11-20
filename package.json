@@ -14,8 +14,12 @@
     "start": "node bridge/server.js"
   },
   "dependencies": {
+    "@azure/msal-browser": "^5.30.0",
     "@supabase/supabase-js": "2.119.0",
-    "jose": "6.2.18"
+    "fast-xml-parser": "^5.12.1",
+    "fflate": "^0.8.3",
+    "jose": "6.2.18",
+    "pdfjs-dist": "^6.5.438"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.3.14",

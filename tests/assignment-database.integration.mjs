@@ -77,4 +77,14 @@ const webClaims={sub:u1,email:'a@example.test',aud:'authenticated',role:'authent
 assert.deepEqual(await hook(webClaims),webClaims);passed++;
 await asUser(u1,'a@example.test',async()=>{await fail(()=>db.query('select public.assignment_access_token_hook($1::jsonb)',[JSON.stringify({claims:injected})]),/permission denied/)});
 await db.query('update workdesk_private.assignment_oauth_clients set enabled=false where client_id=$1',[cid1]);assert.deepEqual((await hook({...injected,client_id:cid1})).assignment_scopes,[]);passed++;
+await asUser(u1,'a@example.test',async()=>{
+ const task=(await db.query('select * from public.tasks where id=$1',[fullOtherId])).rows[0];
+ const actions=[{kind:'task',id:fullOtherId,expected_revision:task.revision,patch:{status:'waiting',remaining_action:'회신 확인'}}];
+ const mid='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+ const result=(await db.query('select to_jsonb(public.assignment_resolve_message($1,$2,$3::jsonb,false)) as result',[mid,'회신 대기로 반영',JSON.stringify(actions)])).rows[0].result;
+ assert.equal(result.resolution_status,'applied');
+ const saved=(await db.query('select * from public.tasks where id=$1',[fullOtherId])).rows[0];assert.equal(saved.status,'waiting');assert.equal(saved.note,'사용자 보존 메모');passed++;
+ await db.query('select public.assignment_resolve_message($1,$2,$3::jsonb,false)',[mid,'중복 요청',JSON.stringify(actions)]);
+ assert.equal((await db.query('select revision from public.tasks where id=$1',[fullOtherId])).rows[0].revision,saved.revision);passed++;
+});
 console.log(JSON.stringify({passed,engine:'PGlite PostgreSQL',hostedAuthTested:false}));await db.close();
