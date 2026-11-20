@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseImport,makeFeed,readMaterials,importPrompt} from '../src/assignment-import.js';
+import {parseImport,makeFeed,readMaterials,importPrompt,manualDraft,selectedMaterial} from '../src/assignment-import.js';
 const item={id:'work-1',title:'견적 검토',due_date:'2026-11-25',next_action:'수정 견적 대조',source_refs:[{title:'수정 견적 메일',url:'https://example.test/mail',context:'금요일 회신 요청'}]};
 const parse=tasks=>parseImport(JSON.stringify({type:'ieum.import',version:1,tasks}));
 test('import validates dates, identity, evidence and unsafe URLs',()=>{
@@ -26,3 +26,16 @@ test('text file import reports unsupported binary files and enforces total size'
  await assert.rejects(readMaterials([{name:'big.txt',size:800000}]),/700KB/);
 });
 test('prompt carries existing IDs and next steps and does not imply automatic execution',()=>{const p=importPrompt([{...item,status:'done',note:'보존'}],'원문');assert.match(p,/ieum.import/);assert.match(p,/work-1/);assert.match(p,/자동 수집·자동 저장을 했다고 말하지 않는다/);assert.match(p,/원문/);});
+
+test('direct entry preserves source evidence and uses the same validated feed path',()=>{
+ assert.throws(()=>manualDraft('  ','','source'),/업무명/);
+ const draft=manualDraft('견적 검토','담당자에게 회신','실제 회의록 근거','manual-test');
+ const feed=makeFeed(parseImport(JSON.stringify(draft)),[''],[],'workspace','2026-11-20T00:00:00Z','manual-test');
+ assert.equal(feed.tasks[0].source_refs[0].context,'실제 회의록 근거');
+ assert.equal(feed.tasks[0].next_action,'담당자에게 회신');
+ assert.equal(manualDraft('검토','', '가'.repeat(7000),'x').tasks[0].source_refs[0].context.length,6000);
+});
+test('only selected documents enter the analysis material with original filenames',()=>{
+ const documents=[{name:'included.docx',text:'포함할 근거'},{name:'excluded.txt',text:'제외할 자료'}];
+ const text=selectedMaterial(documents,[0]);assert.match(text,/included.docx/);assert.match(text,/포함할 근거/);assert.doesNotMatch(text,/제외할 자료/);assert.equal(selectedMaterial(documents,[]),'');
+});

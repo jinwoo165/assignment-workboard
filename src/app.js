@@ -29,7 +29,7 @@ import {freshKey,isFresh,isUnread,orderedLinks} from './freshness.js';
 import './style.css';
 import './conversation-refresh.css';
 import './updates.css';
-const APP_VERSION='2.16.0';
+const APP_VERSION='2.17.0';
 const presentation=new URLSearchParams(location.search).get('presentation')==='1';
 const demo=presentation||new URLSearchParams(location.search).get('demo')==='1';
 let presentationStage=0;
