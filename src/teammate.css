@@ -134,3 +134,9 @@ input,textarea,select{color:var(--text);border-color:var(--line)}
  .login-story .teammate-promise{gap:8px 12px;font-size:11px}
  .login-panel{padding:24px}
 }
+
+.login-demo-entry{margin-top:18px}
+.login-demo-button{width:100%;flex-wrap:wrap;gap:3px 7px;border-color:var(--green);color:var(--green);text-align:center;line-height:1.6;padding:12px 10px}
+.login-demo-button small{color:inherit;font-size:12px;white-space:nowrap}
+.login-demo-button:hover{background:var(--soft);text-decoration:none}
+.login-card .login-demo-entry p{font-size:11px;line-height:1.7;color:var(--muted);margin:8px 0 0;word-break:keep-all}
