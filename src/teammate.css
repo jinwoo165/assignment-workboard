@@ -103,3 +103,34 @@ input,textarea,select{color:var(--text);border-color:var(--line)}
  .sidebar #liveStatus{font-size:10px;line-height:1.4}
  .sidebar #liveStatus small{font-size:9px}
 }
+
+/* First visit: the same work context, decisions and next actions. */
+.login-story{padding:clamp(36px,6vw,88px) clamp(28px,5vw,76px)}
+.login-story .brand{margin-bottom:44px}
+.login-story .company-logo{padding:0;max-width:300px}
+.login-product-name{font-size:25px;margin-bottom:24px}
+.login-story h1{font-size:clamp(32px,3.3vw,48px);line-height:1.38;letter-spacing:-1.8px;word-break:keep-all}
+.login-story .teammate-intro{display:block;color:var(--muted);font-size:16px;line-height:1.9;margin-top:24px;word-break:keep-all}
+.login-story .teammate-promise{display:flex;flex-wrap:wrap;gap:12px 22px;border-color:var(--line);margin-top:36px;padding-top:22px;font-size:14px;line-height:1.6}
+.teammate-promise span{display:flex;align-items:center;gap:9px}
+.teammate-promise span:before{content:'';width:4px;height:4px;flex:0 0 4px;background:var(--brand-red)}
+.login-story .teammate-start{display:block;color:var(--muted);font-size:12px;line-height:1.7;margin-top:14px;word-break:keep-all}
+@media(max-width:900px){
+ .login-story{padding:32px 28px;border-right:0;border-bottom:1px solid var(--line)}
+ .login-story .brand{margin-bottom:26px}
+ .login-story .company-logo{max-width:240px}
+ .login-product-name{font-size:20px;margin-bottom:14px}
+ .login-story h1{font-size:32px;letter-spacing:-1px}
+ .login-story .teammate-intro{font-size:14px;margin-top:16px}
+ .login-story .teammate-intro br{display:none}
+ .login-story .teammate-promise{margin-top:22px;padding-top:16px;gap:8px 16px;font-size:12px}
+ .login-story .teammate-start{display:none}
+ .login-panel{padding:28px}
+}
+@media(max-width:400px){
+ .login-story{padding:24px}
+ .login-story .brand{margin-bottom:20px}
+ .login-story h1{font-size:28px}
+ .login-story .teammate-promise{gap:8px 12px;font-size:11px}
+ .login-panel{padding:24px}
+}

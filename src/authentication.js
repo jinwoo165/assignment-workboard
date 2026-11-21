@@ -50,7 +50,7 @@ export function authDestination(event,session,recoveryPending=false){
  return event==='PASSWORD_RECOVERY'||recoveryPending?'password':'board';
 }
 
-export function loginShell(content){return `<div class="login-wrap"><section class="login-story"><div class="brand"><img class="company-logo" src="./images/company-logo.svg" alt="IPARK 현대산업개발" width="930" height="99"></div><div class="login-product-name">AI Teammate</div><h1>내 업무의 흐름을<br>한곳에 남기다.</h1><p>메일과 대화 속 해야 할 일부터<br>오늘의 진척, 작은 메모, 완료의 기록까지.<br>어디서든 같은 업무보드로 이어집니다.</p><div class="story-line">업무 관리 &nbsp; / &nbsp; 일정과 이력 &nbsp; / &nbsp; 개인 AI 연결</div></section><section class="login-panel"><div class="login-card">${content}</div></section></div>`;}
+export function loginShell(content){return `<div class="login-wrap"><section class="login-story"><div class="brand"><img class="company-logo" src="./images/company-logo.svg" alt="IPARK 현대산업개발" width="930" height="99"></div><div class="login-product-name">AI Teammate</div><h1>대화로 함께 일하는<br>나의 AI 동료.</h1><p class="teammate-intro">흩어진 메일과 대화, 회의록을 내 업무로 연결하고,<br>판단과 다음 행동을 대화로 이어갑니다.</p><div class="story-line teammate-promise"><span>업무의 맥락을 잇고</span><span>함께 판단하고</span><span>다음 행동으로</span></div><p class="teammate-start">내 자료에서 시작해, 나만의 업무 흐름을 만들어 보세요.</p></section><section class="login-panel"><div class="login-card">${content}</div></section></div>`;}
 
 export function configuredOAuthProviders(providers){return ['azure','google'].filter(provider=>Array.isArray(providers)&&providers.includes(provider));}
 
