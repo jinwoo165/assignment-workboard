@@ -719,9 +719,8 @@ async function openItemDetail(task,event){
  if(!task&&!event)return;
  const target={task_id:task?.id||null,event_id:event?.id||null};
  conversationTarget=target;editTask=task?structuredClone(task):null;detailHistory=[];
- $('#detail').innerHTML=`<div class="task-detail fixed-item-dialog">${itemHeader('closeItemDetail')}${itemTabs('content')}<div class="dialog-body" tabindex="0" role="region" aria-label="업무 내용 스크롤"><div id="itemDetailContent" ${task?`data-task-id="${esc(task.id)}"`:`data-event-id="${esc(event.id)}"`}>${readableItemContent(task,event)}</div>${task?'<button class="btn primary" id="continueTaskStory">대화로 진행 상황 남기기</button><details class="previous-records"><summary>변경 이력</summary><div id="detailHistory" tabindex="0" role="region" aria-label="업무 변경 이력 스크롤"></div></details>':''}</div></div>`;
+ $('#detail').innerHTML=`<div class="task-detail fixed-item-dialog">${itemHeader('closeItemDetail')}${itemTabs('content')}<div class="dialog-body" tabindex="0" role="region" aria-label="업무 내용 스크롤"><div id="itemDetailContent" ${task?`data-task-id="${esc(task.id)}"`:`data-event-id="${esc(event.id)}"`}>${readableItemContent(task,event)}</div>${task?'<details class="previous-records"><summary>변경 이력</summary><div id="detailHistory" tabindex="0" role="region" aria-label="업무 변경 이력 스크롤"></div></details>':''}</div></div>`;
  $('#closeItemDetail').onclick=()=>$('#detail').close();bindStoryButtons($('#detail'));bindItemTabs();
- if(task)$('#continueTaskStory').onclick=()=>openConversation(target);
  if(!$('#detail').open)$('#detail').showModal();$('#detail .dialog-body').scrollTop=0;
  if(task)await loadTaskDetailHistory(task.id);
 }
