@@ -32,7 +32,7 @@ import './conversation-refresh.css';
 import './updates.css';
 import './teammate.css';
 import {utilityMenus} from './teammate-ui.js';
-const APP_VERSION='2.20.0';
+const APP_VERSION=__APP_VERSION__;
 const presentation=new URLSearchParams(location.search).get('presentation')==='1';
 const demo=presentation||new URLSearchParams(location.search).get('demo')==='1';
 let presentationStage=0;
