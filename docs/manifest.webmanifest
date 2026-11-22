@@ -1,1 +1,1 @@
-{"name": "AI Teammate", "short_name": "AI Teammate", "start_url": "./", "scope": "./", "display": "standalone", "background_color": "#f5f5f6", "theme_color": "#212121", "icons": [{"src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}]}
+{"name": "AI Teaming", "short_name": "AI Teaming", "start_url": "./", "scope": "./", "display": "standalone", "background_color": "#f5f5f6", "theme_color": "#212121", "icons": [{"src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}]}
