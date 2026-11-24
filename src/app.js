@@ -76,6 +76,14 @@ document.addEventListener('click',event=>{if(!event.target.closest('.desktop-dro
 document.addEventListener('keydown',event=>{if(event.key==='Escape'){const menu=document.querySelector('.desktop-dropdown[open]');if(menu){closeDesktopMenus();menu.querySelector('summary').focus();}}});
 const boardMotion=createBoardMotion();
 const visualMotion=createVisualMotion();
+let guestNavigation=false;
+app.addEventListener('click',async event=>{
+ const entry=event.target.closest('.login-demo-button');
+ if(!entry||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+ event.preventDefault();if(guestNavigation)return;guestNavigation=true;
+ await visualMotion.closeScreen();location.assign(entry.href);
+});
+window.addEventListener('pageshow',event=>{if(event.persisted)guestNavigation=false;});
 const floatingComposer=createFloatingComposer({onOpen:()=>openConversation({}),icon:categoryIcon('conversation',day())});
 applyAppearance();
 let weatherAttempt=0,searchComposing=false,searchRequest=0;
@@ -292,8 +300,8 @@ async function loadHistory(){
 }
 async function refresh(silent=false){if(!state.workspace||state.loading)return;state.loading=true;const seq=++loadSeq;try{
  if(!demo){const [tasks,events,runs,links,messages,overrides]=await Promise.all([rows('tasks',q=>q.eq('workspace_id',state.workspace.id).order('id')),rows('calendar_events',q=>q.eq('workspace_id',state.workspace.id).order('start_at')),withDeadline(db.from('sync_runs').select('*').eq('workspace_id',state.workspace.id).order('generated_at',{ascending:false}).limit(20)),rows('workspace_links',q=>q.eq('workspace_id',state.workspace.id).order('sort_order')),rows('workdesk_messages',q=>q.eq('workspace_id',state.workspace.id).order('created_at').order('id')),rows('calendar_overrides',q=>q.eq('workspace_id',state.workspace.id).order('event_id'))]);if(runs.error)throw runs.error;if(seq!==loadSeq)return;Object.assign(state,{tasks,sourceEvents:events,events:mergeCalendarOverrides(events,overrides),runs:runs.data,links,messages:mergeSavedMessages(state.messages,messages),overrides});await Promise.all([loadHistory(),loadFiles(),loadFileSummaries(),loadCollectionResults(),loadBriefingDismissals(),loadItemVisibility(),loadUserState()]);state.searchFilesLoaded=false;if(state.query)void loadSearchFiles();}
- state.synced=new Date().toISOString();state.error='';render();refreshItemDetail();refreshConversation();void updateWeather();if(!silent)toast(demo?'공개용 업무 화면을 갱신했습니다.':'저장된 최신 상태를 불러왔습니다.');
- }catch(e){state.error=errorMessage(e);render();}finally{state.loading=false;}}
+ state.synced=new Date().toISOString();state.error='';await visualMotion.beforeBoard(app);render();refreshItemDetail();refreshConversation();void updateWeather();if(!silent)toast(demo?'공개용 업무 화면을 갱신했습니다.':'저장된 최신 상태를 불러왔습니다.');
+ }catch(e){state.error=errorMessage(e);await visualMotion.beforeBoard(app);render();}finally{state.loading=false;}}
 function subscribe(){if(demo)return;channel=db.channel('workdesk:'+state.workspace.id);for(const table of ['tasks','task_history','calendar_events','sync_runs','workdesk_messages','calendar_overrides','file_changes','file_sync_runs','file_summaries','workspace_links','source_collection_results','briefing_dismissals','workdesk_item_visibility','workdesk_user_state'])channel.on('postgres_changes',{event:'*',schema:'public',table,filter:'workspace_id=eq.'+state.workspace.id},()=>{clearTimeout(reloadTimer);reloadTimer=setTimeout(()=>refresh(true),250);});channel.subscribe(status=>{state.realtime=status==='SUBSCRIBED';const n=$('#liveStatus');if(n)n.innerHTML=syncLabel();});}
 const syncLabel=()=>`${state.realtime?'<i class="sync-dot"></i>보드 실시간 연결':'<i class="sync-dot warn"></i>보드 주기적 동기화'}<br><small>화면 확인 ${kstTime(state.synced)}</small>${userSync?.error?'<br><small>기기 동기화 대기 · 연결 확인 필요</small>':userSync?.conflicts.size?'<br><small>초안 충돌 · 해당 대화에서 선택 필요</small>':''}`;
 function loginFeedback(message='',retry=false){loginScreen?.feedback(message,retry);}
@@ -303,12 +311,13 @@ function connectionMessage(error,service='login'){
  return authenticationMessage(error,'session');
 }
 function login(message=''){
+ if($('#loginForm')){if(message)loginScreen?.feedback(message,true,true);return;}
  boardMotion.reset();visualMotion.reset();
  floatingComposer.hide();
  if(!db){app.innerHTML=setupHTML(assignmentConfig.CONFIG_ERROR||'');return;}
- if($('#loginForm')){if(message)loginScreen?.feedback(message,true,true);return;}
  if(!LOGIN_CONFIGURED&&!message)message='첫 로그인 연결 설정을 마무리하고 있습니다. 설정 완료 후 접속할 수 있습니다.';
  loginScreen=mountLogin(app,{actions:authActions,configured:LOGIN_CONFIGURED,message,onSession:session=>sessionCheck.accept(session),onRetry:()=>void sessionCheck?.check(),providers:assignmentConfig.OAUTH_PROVIDERS||[],signupEnabled:assignmentConfig.SIGNUP_ENABLED!==false});
+ visualMotion.login();
 }
 function showPasswordSetup(recoveryUser=null){
  if(demo){toast('데모에서는 비밀번호를 변경하지 않습니다.');return;}
@@ -748,15 +757,19 @@ function bindItemTabs(){
 async function openItemDetail(task,event){
  if(!task&&!event)return;
  const target={task_id:task?.id||null,event_id:event?.id||null};
+ const transition=visualMotion.captureDialog($('#detail'),targetKey(target),'content');
  conversationTarget=target;editTask=task?structuredClone(task):null;detailHistory=[];
  $('#detail').innerHTML=`<div class="task-detail fixed-item-dialog">${itemHeader('closeItemDetail')}${itemTabs('content')}<div class="dialog-body" tabindex="0" role="region" aria-label="업무 내용 스크롤"><div id="itemDetailContent" ${task?`data-task-id="${esc(task.id)}"`:`data-event-id="${esc(event.id)}"`}>${readableItemContent(task,event)}</div>${task?'<details class="previous-records"><summary>변경 이력</summary><div id="detailHistory" tabindex="0" role="region" aria-label="업무 변경 이력 스크롤"></div></details>':''}</div></div>`;
  $('#closeItemDetail').onclick=()=>$('#detail').close();bindStoryButtons($('#detail'));bindItemTabs();
  if(!$('#detail').open)$('#detail').showModal();$('#detail .dialog-body').scrollTop=0;
+ visualMotion.revealDialog($('#detail'),transition);
  if(task)await loadTaskDetailHistory(task.id);
 }
 async function openConversation(target){const readTask=state.tasks.find(t=>t.id===target.task_id);if(readTask){markRead('task',readTask.id,readTask.created_at);render();}conversationTarget={task_id:target.task_id||null,event_id:target.event_id||null};const key=targetKey(conversationTarget);const task=state.tasks.find(t=>t.id===conversationTarget.task_id),event=state.events.find(e=>e.id===conversationTarget.event_id);editTask=task?structuredClone(task):null;detailHistory=[];const draft=drafts.get(key)||{body:'',id:crypto.randomUUID()};drafts.set(key,draft);
+ const transition=visualMotion.captureDialog($('#detail'),key,'story');
  $('#detail').innerHTML=`<form id="conversationForm" class="${task||event?'fixed-item-dialog':''}">${task||event?itemHeader('closeConversation'):`<div class="dialog-head"><div><p class="eyebrow">YOUR WORK NOTES</p><h2>${task||event?'업무 살펴보기':'자유롭게 남기기'}</h2></div><button type="button" class="icon-btn" id="closeConversation" aria-label="닫기">×</button></div>`}${task||event?itemTabs('story'):''}<div class="dialog-body conversation-body"><div id="conversationContext">${contextSummary()}</div>${task||event?`<div id="conversationThread">${threadHTML()}</div>`:'<div class="free-note-guide"><p>진행한 일, 떠오른 생각, 회의 메모를 자유롭게 남겨주세요.</p><p>내 자료 가져오기에서 저장된 대화를 포함한 분석 지침을 복사해 개인 AI에 전달하세요.</p><small>“처리 완료”처럼 대상이 모호하면 확인을 요청합니다. 특정 업무 이야기는 해당 업무에서 남기면 더 명확합니다.</small></div>'}</div><div class="conversation-compose"><label class="conversation-label" for="conversationText">${task||event?'이 업무에 이어서 이야기하기':'오늘 남기고 싶은 이야기'}</label><textarea id="conversationText" placeholder="${task||event?'진행한 일이나 남은 일을 알려주세요':'예: 오늘 자재관리 회의에서 반입 확인 방식을 논의했어. 다음 회의에서는 담당자 의견을 더 들어봐야 해.'}" rows="${task||event?3:7}" maxlength="12000" required>${esc(draft.body)}</textarea><details class="conversation-timing"><summary>저장한 이야기는 언제 반영되나요?</summary><p>대화는 바로 저장됩니다. 내 자료 가져오기에서 업무·대화·자료 지침을 복사해 개인 AI에 전달하고 분석 결과를 가져오세요. 자동 정리나 정기 갱신은 별도 설정 없이는 실행되지 않습니다.</p></details><div id="draftSyncStatus" class="form-note" aria-live="polite"></div><div id="conversationError" class="error" role="alert"></div></div><div class="dialog-foot"><span class="save-caption">${demo?'체험 대화 · 실제 저장 없음':'즉시 저장 · 개인 AI에 반영 요청'}</span><span class="spacer"></span><button type="submit" class="btn primary" id="sendConversation">대화 남기기 ↑</button></div></form>`;
  $('#closeConversation').onclick=()=>$('#detail').close();$('#conversationText').oninput=e=>{const previous=drafts.get(key);drafts.set(key,{body:e.target.value,id:previous?.body===e.target.value?previous.id:crypto.randomUUID()});queueUserState('draft:'+key,drafts.get(key));};$('#conversationForm').onsubmit=sendConversation;syncDraftView();bindItemDetailButtons();bindItemTabs();if(!$('#detail').open)$('#detail').showModal();$('#detail .dialog-body').scrollTop=$('#detail .dialog-body').scrollHeight;
+ visualMotion.revealDialog($('#detail'),transition);
  if(task)await loadTaskDetailHistory(task.id);
 }
 async function sendConversation(e){

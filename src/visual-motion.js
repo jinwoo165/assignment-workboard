@@ -1,5 +1,6 @@
 // Presentation only. This controller never reads or writes work data or preferences.
 // Keep animation clocks outside app.innerHTML so background refreshes cannot replay them.
+import {createScreenMotion} from './screen-motion.js';
 const EASE='cubic-bezier(.22,1,.36,1)';
 const NAV_DURATION=360;
 const REVEAL_DURATION=1450;
@@ -13,20 +14,53 @@ export function visualChange(previous,next){
 
 export function createVisualMotion({window:win=window}={}){
  const doc=win.document,reduced=win.matchMedia('(prefers-reduced-motion: reduce)');
+ const screen=createScreenMotion({window:win});
  const desktop=win.matchMedia('(min-width:901px)'),hover=win.matchMedia('(hover:hover)');
  let previous=null,sequence=null,root=null,navTravel=null,navKey=null,captured=null,tooltip=null,tipOwner=null;
  let weatherGhost=null,weatherAnimations=[];
+ let paneGhost=null;
+ const paneRunning=new Set();
  const running=new Set();
  function stop(){for(const animation of running)animation.cancel();running.clear();}
- function animate(node,frames,duration,delay=0,start=win.performance.now(),easing=EASE,done=()=>{}){
+ function animate(node,frames,duration,delay=0,start=win.performance.now(),easing=EASE,done=()=>{},owner=running){
   const elapsed=win.performance.now()-start;
   if(!node?.getClientRects().length||!node.animate||reduced.matches||elapsed>=duration+delay){done();return;}
   const animation=node.animate(frames,{duration,delay,easing,fill:'backwards'});
-  animation.currentTime=Math.max(0,elapsed);running.add(animation);
-  animation.oncancel=()=>{running.delete(animation);done();};
-  animation.onfinish=()=>{running.delete(animation);done();animation.cancel();};
+  animation.currentTime=Math.max(0,elapsed);owner.add(animation);
+  animation.oncancel=()=>{owner.delete(animation);done();};
+  animation.onfinish=()=>{owner.delete(animation);done();animation.cancel();};
   return animation;
  }
+ function clearPane(){for(const animation of paneRunning)animation.cancel();paneRunning.clear();paneGhost?.remove();paneGhost=null;}
+ function captureDialog(dialog,key,pane){
+  clearPane();
+  const current=dialog.querySelector('[data-item-pane][aria-pressed="true"]')?.dataset.itemPane;
+  const same=dialog.dataset.motionTarget===key;
+  dialog.dataset.motionTarget=key;
+  if(!dialog.open||!same||!current||current===pane||reduced.matches)return null;
+  const body=dialog.querySelector('.dialog-body'),bounds=body?.getBoundingClientRect(),host=dialog.getBoundingClientRect();
+  if(!bounds)return null;
+  const ghost=doc.createElement('div');ghost.className='item-pane-ghost';ghost.setAttribute('aria-hidden','true');ghost.setAttribute('inert','');
+  for(const node of dialog.querySelectorAll('.fixed-item-dialog>.dialog-body,.fixed-item-dialog>.conversation-compose,.fixed-item-dialog>.dialog-foot')){
+   const clone=node.cloneNode(true);clone.removeAttribute('id');clone.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
+   ghost.append(clone);
+   if(node.classList.contains('dialog-body'))clone.scrollTop=node.scrollTop;
+  }
+  ghost.style.cssText=`top:${bounds.top-host.top-dialog.clientTop}px;left:${bounds.left-host.left-dialog.clientLeft}px;width:${bounds.width}px;height:${host.bottom-bounds.top-dialog.clientTop}px`;
+  return {ghost,scrollTop:body.scrollTop,sign:pane==='story'?1:-1,focus:Boolean(doc.activeElement?.closest('[data-item-pane]'))};
+ }
+ function revealDialog(dialog,transition){
+  if(!transition)return;
+  const {ghost,sign,focus,scrollTop}=transition,start=win.performance.now();
+  paneGhost=ghost;dialog.append(ghost);
+  ghost.querySelector('.dialog-body').scrollTop=scrollTop;
+  animate(ghost,[{opacity:1,transform:'translateX(0) scale(1)',filter:'blur(0px)'},{opacity:0,transform:`translateX(${-sign*90}px) scale(.96)`,filter:'blur(3px)'}],320,0,start,EASE,()=>ghost.remove(),paneRunning);
+  dialog.querySelectorAll('.fixed-item-dialog>.dialog-body,.fixed-item-dialog>.conversation-compose,.fixed-item-dialog>.dialog-foot').forEach((node,index)=>{
+   animate(node,[{opacity:0,transform:`perspective(1000px) translateX(${sign*105}px) rotateY(${-sign*5}deg) scale(.96)`,filter:'blur(3px)'},{opacity:1,transform:'perspective(1000px) translateX(0) rotateY(0deg) scale(1)',filter:'blur(0px)'}],540,index*35,start,EASE,()=>{},paneRunning);
+  });
+  if(focus)dialog.querySelector('[data-item-pane][aria-pressed="true"]')?.focus({preventScroll:true});
+ }
+ doc.addEventListener('close',event=>{if(event.target.id==='detail')clearPane();},true);
  function clearWeather(){
   for(const animation of weatherAnimations)animation?.cancel();
   weatherAnimations=[];weatherGhost?.remove();weatherGhost=null;
@@ -78,7 +112,7 @@ export function createVisualMotion({window:win=window}={}){
  doc.addEventListener('keydown',event=>{if(event.key==='Escape')hideTip();});
  doc.addEventListener('scroll',hideTip,true);
  win.addEventListener('resize',hideTip);
- reduced.addEventListener('change',()=>{if(reduced.matches){stop();clearWeather();sequence=null;navTravel=null;hideTip();}});
+ reduced.addEventListener('change',()=>{if(reduced.matches){stop();clearWeather();clearPane();sequence=null;navTravel=null;hideTip();}});
 
  function capture(nextRoot){
   clearWeather();
@@ -119,20 +153,18 @@ export function createVisualMotion({window:win=window}={}){
   const cards=(selector,delay)=>root.querySelectorAll(selector).forEach(node=>animate(node,rise,680,delay,start));
   const rows=(selector,delay,step=90)=>[...root.querySelectorAll(selector)].filter(node=>node.getClientRects().length).slice(0,6).forEach((node,index)=>animate(node,[{opacity:0,transform:`translateX(${desktop.matches?38:22}px) scale(.96)`,filter:'blur(3px)'},{opacity:1,transform:'translateX(0) scale(1)',filter:'blur(0px)'}],520,delay+index*step,start));
   if(kind==='intro'){
-   const area=root.querySelector('.work-area'),rect=area?.getBoundingClientRect(),stage=root.querySelector('.layout');
-   if(rect){
-    const radius=Math.ceil(Math.hypot(Math.max(36,rect.width-36),Math.max(36,rect.height-36)));
-    const duration=desktop.matches?REVEAL_DURATION:1100;
-    if(now-start<duration)stage.classList.add('motion-reveal-stage');
-    animate(area,[{clipPath:'circle(0px at 36px 36px)',offset:0},{clipPath:'circle(32px at 36px 36px)',offset:.14},{clipPath:`circle(${radius}px at 36px 36px)`,offset:1}],duration,0,start,'cubic-bezier(.5,0,.25,1)',()=>stage.classList.remove('motion-reveal-stage'));
-   }
+   void screen.open({start,duration:REVEAL_DURATION});
    if(desktop.matches){
-    animate(root.querySelector('.sidebar'),[{opacity:.2,transform:'translateX(-8px)'},{opacity:1,transform:'translateX(0)'}],340,0,start);
+    const fold=[{opacity:0,transform:'perspective(700px) translateY(-12px) rotateX(-86deg) scale(.94)',filter:'brightness(.7)',offset:0},{opacity:1,transform:'perspective(700px) translateY(2px) rotateX(8deg) scale(1.015)',filter:'brightness(1.08)',offset:.72},{opacity:1,transform:'perspective(700px) translateY(0) rotateX(0deg) scale(1)',filter:'brightness(1)',offset:1}];
+    const buttons=[...root.querySelectorAll('.sidebar .nav>button')];
+    buttons.forEach((button,index)=>animate(button,fold,700,460+index*120,start));
+    const selected=Math.max(0,buttons.findIndex(button=>button.classList.contains('active')));
+    animate(root.querySelector('.motion-nav-indicator'),[{opacity:0},{opacity:1}],550,460+selected*120,start);
    }
    // Panels begin after the circle has exposed their area; list rows follow their panel.
    cards('.title-copy',430);cards('.scenic-banner',550);cards('.weather-panel',670);
    cards('.shared-briefing',850);cards('#viewBody>.panel,#viewBody>.calendar-layout>.panel',1040);
-   cards('.work-agenda>.agenda-panel',1240);cards('.shared-files>.files-panel',1420);cards('.work-progress',320);
+   cards('.work-agenda>.agenda-panel',1240);cards('.shared-files>.files-panel',1420);cards('.work-progress',1050);
    rows('#viewBody .panel-scroll>.task-card,#viewBody .panel-scroll>.link-card,#viewBody .panel-scroll>.message-card',1260,75);
    rows('.work-agenda .agenda-item',1470);rows('.shared-files .file-card',1640,75);
   }else if(kind==='page'){
@@ -160,5 +192,10 @@ export function createVisualMotion({window:win=window}={}){
   if(captured?.focus){const [attribute,value]=captured.focus;const selector=attribute==='data-view'?'.sidebar .nav [data-view]':'.task-filters [data-task-filter]';[...root.querySelectorAll(selector)].find(n=>n.getAttribute(attribute)===value)?.focus({preventScroll:true});hideTip();}
   reveal();captured=null;
  }
- return {capture,refresh,weather,reset(){stop();clearWeather();hideTip();root?.querySelectorAll('.motion-nav-indicator').forEach(n=>n.remove());root?.classList.remove('visual-motion-ready');previous=null;sequence=null;navTravel=null;navKey=null;captured=null;}};
+ return {capture,refresh,weather,captureDialog,revealDialog,
+  login(){void screen.open();},
+  closeScreen:()=>screen.close(),
+  beforeBoard:nextRoot=>nextRoot.querySelector('.login-wrap')?screen.close():Promise.resolve(),
+  reset(){stop();clearWeather();clearPane();screen.reset();hideTip();root?.querySelectorAll('.motion-nav-indicator').forEach(n=>n.remove());root?.classList.remove('visual-motion-ready');previous=null;sequence=null;navTravel=null;navKey=null;captured=null;}
+ };
 }

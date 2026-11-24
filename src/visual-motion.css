@@ -1,7 +1,15 @@
 /* Video-inspired motion, using the existing assignment palette and layout. */
 .visual-motion-ready .panel,.visual-motion-ready .briefing,.visual-motion-ready .work-progress{box-shadow:0 3px 14px color-mix(in srgb,var(--text) 3%,transparent)}
 .visual-motion-ready .work-area{background:var(--bg)}
-.motion-reveal-stage{background:radial-gradient(circle at 18% 14%,color-mix(in srgb,var(--green) 65%,#172326),#141b22 85%)}
+.screen-motion-curtain{position:fixed;inset:0;z-index:2147483000;pointer-events:none;overflow:hidden;contain:strict}
+.screen-motion-curtain svg{display:block}
+.screen-motion-active .floating-compose{visibility:hidden}
+.item-pane-ghost{position:absolute;z-index:2;display:flex;flex-direction:column;overflow:hidden;pointer-events:none;user-select:none;background:var(--surface)}
+.item-pane-ghost>.dialog-body{flex:1;min-height:0;overflow:hidden}
+.item-pane-ghost>.conversation-compose,.item-pane-ghost>.dialog-foot{flex-shrink:0}
+.item-pane-ghost>.dialog-foot{position:static}
+dialog:has(.fixed-item-dialog){overflow:hidden}
+.fixed-item-dialog>.dialog-body,.fixed-item-dialog>.conversation-compose,.fixed-item-dialog>.dialog-foot{backface-visibility:hidden}
 .visual-motion-ready :is(.panel,.shared-briefing,.work-progress){transform-origin:50% 20%}
 .weather-panel{position:relative;overflow:hidden}
 .weather-motion-ghost{z-index:1;overflow:hidden;user-select:none}
@@ -15,7 +23,7 @@
 .motion-tooltip{position:fixed;z-index:1000;max-width:240px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);box-shadow:0 6px 24px #0002;font-size:12px;line-height:1.65;pointer-events:none;white-space:normal}
 .motion-tooltip[hidden]{display:none}
 @media(prefers-reduced-motion:no-preference){
- .visual-motion-ready .sidebar .nav button{transition:color 180ms ease}
+ .visual-motion-ready .sidebar .nav button{transition:color 180ms ease;transform-origin:50% 0;backface-visibility:hidden}
  .visual-motion-ready .sidebar .nav .symbol{transition:transform 240ms cubic-bezier(.22,1,.36,1)}
  .visual-motion-ready .sidebar .nav button.active .symbol{transform:scale(1.06)}
  .visual-motion-ready :is(.task-card,.file-card,.agenda-item,.link-card,.message-card){transition:background-color 180ms ease,box-shadow 180ms ease}
