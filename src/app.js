@@ -40,6 +40,8 @@ import './board-motion.css';
 import './desktop-ui.css';
 import {createVisualMotion} from './visual-motion.js';
 import './visual-motion.css';
+import {bindDialogDismiss} from './dialog-dismiss.js';
+document.querySelectorAll('dialog').forEach(bindDialogDismiss);
 const APP_VERSION=__APP_VERSION__;
 const presentation=new URLSearchParams(location.search).get('presentation')==='1';
 const demo=presentation||new URLSearchParams(location.search).get('demo')==='1';
