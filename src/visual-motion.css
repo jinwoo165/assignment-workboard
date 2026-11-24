@@ -1,0 +1,35 @@
+/* Video-inspired motion, using the existing assignment palette and layout. */
+.visual-motion-ready .panel,.visual-motion-ready .briefing,.visual-motion-ready .work-progress{box-shadow:0 3px 14px color-mix(in srgb,var(--text) 3%,transparent)}
+.visual-motion-ready .sidebar .motion-nav{position:relative;isolation:isolate}
+.motion-nav-indicator{position:absolute;inset:0 auto auto 0;z-index:-1;pointer-events:none;background:var(--soft);border-radius:9px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--green) 9%,transparent)}
+.motion-nav-indicator:before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:3px;background:var(--green)}
+.motion-nav-orb{position:absolute;left:9px;top:50%;width:30px;height:30px;transform:translateY(-50%);border-radius:50%;background:color-mix(in srgb,var(--green) 11%,var(--surface));box-shadow:0 2px 7px color-mix(in srgb,var(--green) 10%,transparent)}
+.visual-motion-ready .sidebar .motion-nav button.active{background:transparent}
+.visual-motion-ready .sidebar .motion-nav button.active:before{display:none}
+.motion-tooltip{position:fixed;z-index:1000;max-width:240px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);box-shadow:0 6px 24px #0002;font-size:12px;line-height:1.65;pointer-events:none;white-space:normal}
+.motion-tooltip[hidden]{display:none}
+@media(prefers-reduced-motion:no-preference){
+ .visual-motion-ready .sidebar .nav button{transition:color 180ms ease}
+ .visual-motion-ready .sidebar .nav .symbol{transition:transform 240ms cubic-bezier(.22,1,.36,1)}
+ .visual-motion-ready .sidebar .nav button.active .symbol{transform:scale(1.06)}
+ .visual-motion-ready :is(.task-card,.file-card,.agenda-item,.link-card,.message-card){transition:background-color 180ms ease,box-shadow 180ms ease}
+ .visual-motion-ready :is(.btn,.shortcut,.text-btn,.settings-trigger,.progress-metrics button,.progress-review){transition:background-color 180ms ease,box-shadow 180ms ease,transform 180ms ease}
+ .visual-motion-ready .settings-trigger svg{transition:transform 320ms cubic-bezier(.22,1,.36,1)}
+ .visual-motion-ready .task-filters button{transition:background-color 180ms ease,color 180ms ease,border-color 180ms ease}
+ body:has(.visual-motion-ready) dialog[open]{animation:motion-dialog-in 240ms cubic-bezier(.22,1,.36,1)}
+ body:has(.visual-motion-ready) dialog[open]::backdrop{animation:motion-backdrop-in 180ms ease-out}
+ .visual-motion-ready :is(.utility-popover,.source-popover):popover-open{animation:motion-popover-in 180ms cubic-bezier(.22,1,.36,1)}
+ .visual-motion-ready .desktop-dropdown[open]>.desktop-dropdown-panel{animation:motion-popover-in 180ms cubic-bezier(.22,1,.36,1)}
+ .motion-tooltip:not([hidden]){animation:motion-popover-in 160ms ease-out}
+ body:has(.visual-motion-ready) #toast.show{animation:motion-popover-in 200ms ease-out}
+ @media(hover:hover){
+  .visual-motion-ready :is(.task-card,.file-card,.agenda-item,.link-card,.message-card):hover{background:color-mix(in srgb,var(--soft) 48%,var(--surface));box-shadow:inset 3px 0 0 color-mix(in srgb,var(--green) 48%,transparent)}
+  .visual-motion-ready .sidebar .nav button:hover .symbol{transform:translateX(2px)}
+  .visual-motion-ready .settings-trigger:hover svg{transform:rotate(35deg)}
+  .visual-motion-ready :is(.btn,.shortcut,.progress-metrics button):hover{transform:translateY(-1px)}
+ }
+ .visual-motion-ready :is(.btn,.progress-metrics button,.progress-review):active{transform:scale(.98)}
+}
+@keyframes motion-dialog-in{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes motion-backdrop-in{from{opacity:0}to{opacity:1}}
+@keyframes motion-popover-in{from{opacity:0;translate:0 6px}to{opacity:1;translate:0 0}}
