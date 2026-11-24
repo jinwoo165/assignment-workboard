@@ -40,6 +40,7 @@ import './board-motion.css';
 import './desktop-ui.css';
 import {createVisualMotion} from './visual-motion.js';
 import './visual-motion.css';
+import './login-story.css';
 import {bindDialogDismiss} from './dialog-dismiss.js';
 document.querySelectorAll('dialog').forEach(bindDialogDismiss);
 const APP_VERSION=__APP_VERSION__;
