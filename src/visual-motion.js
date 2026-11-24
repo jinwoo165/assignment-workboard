@@ -3,7 +3,7 @@
 import {createScreenMotion} from './screen-motion.js';
 const EASE='cubic-bezier(.22,1,.36,1)';
 const NAV_DURATION=360;
-const REVEAL_DURATION=1450;
+const REVEAL_DURATION=725;
 const INTRO_END=2900;
 export function visualChange(previous,next){
  if(!previous||previous.scope!==next.scope)return 'intro';

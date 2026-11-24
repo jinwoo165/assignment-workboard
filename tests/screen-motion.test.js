@@ -26,21 +26,21 @@ test('the same circle origin covers all four viewport corners, including a narro
 test('login opens, closes to its original center and stays covered until the ready board opens',async()=>{
  const s=stage(),motion=createScreenMotion(s);
  const opening=motion.open();assert.equal(s.nodes.length,1);assert.equal(s.nodes[0].hole.attributes.r,0);
- s.advance(700);assert.ok(s.nodes[0].hole.attributes.r>0);
+ s.advance(350);assert.ok(s.nodes[0].hole.attributes.r>0);
  const origin=[s.nodes[0].hole.attributes.cx,s.nodes[0].hole.attributes.cy];
- s.advance(750);await opening;assert.equal(s.nodes.length,0);
- const closing=motion.close();s.advance(650);await closing;
+ s.advance(375);await opening;assert.equal(s.nodes.length,0);
+ const closing=motion.close();s.advance(325);await closing;
  assert.equal(s.nodes[0].hole.attributes.r,0);
  assert.deepEqual([s.nodes[0].hole.attributes.cx,s.nodes[0].hole.attributes.cy],origin);
  s.advance(10000);assert.equal(s.nodes.length,1);
- const board=motion.open();s.advance(1450);await board;assert.equal(s.nodes.length,0);assert.equal(s.classes.size,0);
+ const board=motion.open();s.advance(725);await board;assert.equal(s.nodes.length,0);assert.equal(s.classes.size,0);
 });
 
 test('a repeated render resumes an opening and a fast login can interrupt it without leaving promises pending',async()=>{
  const s=stage(),motion=createScreenMotion(s);
- const opening=motion.open({start:0});s.advance(500);const radius=s.nodes[0].hole.attributes.r;
+ const opening=motion.open({start:0});s.advance(250);const radius=s.nodes[0].hole.attributes.r;
  await motion.open({start:0});assert.equal(s.nodes[0].hole.attributes.r,radius);
- const closing=motion.close();await opening;s.advance(650);await closing;
+ const closing=motion.close();await opening;s.advance(325);await closing;
  assert.equal(s.nodes.length,1);assert.equal(s.nodes[0].hole.attributes.r,0);
  motion.reset();assert.equal(s.nodes.length,0);
 });
@@ -49,6 +49,6 @@ test('reduced motion during login and back navigation both release the viewport 
  const s=stage(),motion=createScreenMotion(s);const closing=motion.close();
  s.media.matches=true;s.media.change();await closing;assert.equal(s.nodes.length,0);
  await motion.open();await motion.close();assert.equal(s.nodes.length,0);
- s.media.matches=false;const another=motion.close();s.advance(650);await another;
+ s.media.matches=false;const another=motion.close();s.advance(325);await another;
  s.events.pageshow({persisted:true});assert.equal(s.nodes.length,0);assert.equal(s.classes.size,0);
 });

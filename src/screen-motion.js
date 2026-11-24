@@ -38,7 +38,7 @@ export function createScreenMotion({window:win=window}={}){
   };
   tick();return promise;
  }
- function open({start=win.performance.now(),duration=1450}={}){
+ function open({start=win.performance.now(),duration=725}={}){
   if(reduced.matches){clear();return Promise.resolve();}
   if(flight?.open&&openingStart===start)return Promise.resolve();
   if(win.performance.now()-start>=duration){if(!flight||flight.open)clear();return Promise.resolve();}
@@ -47,7 +47,7 @@ export function createScreenMotion({window:win=window}={}){
  function close(){
   if(reduced.matches){clear();return Promise.resolve();}
   if(curtain&&!flight&&radius===0)return Promise.resolve();
-  return run(false,650);
+  return run(false,325);
  }
  reduced.addEventListener('change',()=>{if(reduced.matches)clear();});
  win.addEventListener('resize',()=>{if(curtain&&!flight)paint(radius||0);});
