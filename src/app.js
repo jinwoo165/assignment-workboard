@@ -81,7 +81,8 @@ app.addEventListener('click',async event=>{
  const entry=event.target.closest('.login-demo-button');
  if(!entry||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
  event.preventDefault();if(guestNavigation)return;guestNavigation=true;
- await visualMotion.closeScreen();location.assign(entry.href);
+ const destination=new URL(entry.href);destination.searchParams.set('v',APP_VERSION);
+ await visualMotion.closeScreen();location.assign(destination.href);
 });
 window.addEventListener('pageshow',event=>{if(event.persisted)guestNavigation=false;});
 const floatingComposer=createFloatingComposer({onOpen:()=>openConversation({}),icon:categoryIcon('conversation',day())});
