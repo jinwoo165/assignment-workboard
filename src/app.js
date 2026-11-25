@@ -596,9 +596,10 @@ function bind(){
  app.querySelectorAll('[data-desktop-theme]').forEach(button=>button.onclick=()=>{
   const next=desktopTheme(button.dataset.desktopTheme).id;
   const close=()=>{closeDesktopMenus();$('#desktopThemeMenu summary').focus({preventScroll:true});};
-  if(next===pcTheme){close();return;}
-  pcTheme=next;try{localStorage.setItem('assignment-workboard.desktop-theme',pcTheme);}catch{}
-  queueUserState('pref:desktop-theme',pcTheme);
+  if(next!==pcTheme){
+   pcTheme=next;try{localStorage.setItem('assignment-workboard.desktop-theme',pcTheme);}catch{}
+   queueUserState('pref:desktop-theme',pcTheme);
+  }
   themeTransition.run(button,applyAppearance,close);
  });
  app.querySelectorAll('[data-course]').forEach(b=>b.onclick=()=>mountCourse($('#historyDetail')));
