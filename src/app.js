@@ -40,6 +40,8 @@ import './board-motion.css';
 import './desktop-ui.css';
 import {createVisualMotion} from './visual-motion.js';
 import './visual-motion.css';
+import {createThemeTransition} from './theme-transition.js';
+import './theme-transition.css';
 import './login-story.css';
 import {bindDialogDismiss} from './dialog-dismiss.js';
 document.querySelectorAll('dialog').forEach(bindDialogDismiss);
@@ -72,6 +74,7 @@ function applyAppearance(){
  document.documentElement.dataset.theme=desktopMedia.matches?(desktopTheme(pcTheme).dark?'dark':'light'):theme;
  const picker=$('#desktopThemeMenu'),palette=desktopTheme(pcTheme);
  if(picker){picker.querySelector('.theme-label').textContent=palette.name;picker.querySelector('summary').setAttribute('aria-label',`화면 색상 선택 · ${palette.name}`);picker.querySelectorAll('[data-desktop-theme]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.desktopTheme===pcTheme)));}
+ const button=$('#themeToggle');if(button){button.setAttribute('aria-checked',String(theme==='dark'));button.innerHTML=`<span aria-hidden="true">${theme==='dark'?'☀':'☾'}</span><span class="theme-label">${theme==='dark'?'라이트':'다크'}</span>`;}
 }
 function closeDesktopMenus(){document.querySelectorAll('.desktop-dropdown[open]').forEach(menu=>menu.open=false);}
 desktopMedia.addEventListener('change',()=>{closeDesktopMenus();applyAppearance();});
@@ -79,6 +82,7 @@ document.addEventListener('click',event=>{if(!event.target.closest('.desktop-dro
 document.addEventListener('keydown',event=>{if(event.key==='Escape'){const menu=document.querySelector('.desktop-dropdown[open]');if(menu){closeDesktopMenus();menu.querySelector('summary').focus();}}});
 const boardMotion=createBoardMotion();
 const visualMotion=createVisualMotion();
+const themeTransition=createThemeTransition();
 let guestNavigation=false;
 app.addEventListener('click',async event=>{
  const entry=event.target.closest('.login-demo-button');
@@ -589,7 +593,14 @@ function openProgressList(group){
  $('#historyDetail').showModal();
 }
 function bind(){
- app.querySelectorAll('[data-desktop-theme]').forEach(button=>button.onclick=()=>{pcTheme=desktopTheme(button.dataset.desktopTheme).id;try{localStorage.setItem('assignment-workboard.desktop-theme',pcTheme);}catch{}queueUserState('pref:desktop-theme',pcTheme);applyAppearance();closeDesktopMenus();$('#desktopThemeMenu summary').focus();});
+ app.querySelectorAll('[data-desktop-theme]').forEach(button=>button.onclick=()=>{
+  const next=desktopTheme(button.dataset.desktopTheme).id;
+  const close=()=>{closeDesktopMenus();$('#desktopThemeMenu summary').focus({preventScroll:true});};
+  if(next===pcTheme){close();return;}
+  pcTheme=next;try{localStorage.setItem('assignment-workboard.desktop-theme',pcTheme);}catch{}
+  queueUserState('pref:desktop-theme',pcTheme);
+  themeTransition.run(button,applyAppearance,close);
+ });
  app.querySelectorAll('[data-course]').forEach(b=>b.onclick=()=>mountCourse($('#historyDetail')));
  app.querySelectorAll('.utility-popover').forEach(menu=>menu.addEventListener('click',e=>{if(e.target.closest('button'))menu.hidePopover();},{capture:true}));
  app.querySelectorAll('[data-ai-connection]').forEach(b=>b.onclick=()=>openAssignmentAI());
@@ -616,7 +627,7 @@ function bind(){
  if($('#showHiddenBriefing'))$('#showHiddenBriefing').onclick=()=>{state.showHiddenBriefing=!state.showHiddenBriefing;render();};
  if($('#showRemovedLinks'))$('#showRemovedLinks').onclick=()=>{state.showRemovedLinks=!state.showRemovedLinks;render();};
  $('#mobileView').onchange=e=>navigate(e.target.value);app.querySelectorAll('[data-logout]').forEach(n=>n.onclick=logout);
- $('#themeToggle').onclick=()=>{theme=theme==='dark'?'light':'dark';applyAppearance();try{localStorage.setItem('assignment-workboard.theme',theme);}catch{}queueUserState('pref:theme',theme);render();};
+ $('#themeToggle').onclick=event=>{theme=theme==='dark'?'light':'dark';try{localStorage.setItem('assignment-workboard.theme',theme);}catch{}queueUserState('pref:theme',theme);themeTransition.run(event.currentTarget,applyAppearance);};
  app.querySelectorAll('[data-rail]').forEach(b=>b.onclick=()=>{state.rail=b.dataset.rail;state.mobilePanel=b.dataset.rail;render();});app.querySelectorAll('[data-mobile-panel]').forEach(b=>{if(b.tagName==='BUTTON')b.onclick=()=>{state.mobilePanel=b.dataset.mobilePanel;if(window.matchMedia('(max-width:900px)').matches){state.mobileExpanded=true;render();}else render();};});
  app.querySelectorAll('[data-calendar-scope]').forEach(b=>b.onclick=()=>{state.calendarScope=b.dataset.calendarScope;state.calendarPane='day';render();});
  app.querySelectorAll('button[data-calendar-pane]').forEach(b=>b.onclick=()=>{state.calendarPane=b.dataset.calendarPane;render();});
